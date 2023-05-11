@@ -68,29 +68,33 @@ var services = scope.ServiceProvider;
 var context = services.GetRequiredService<ApplicationDbContext>();
 context.Database.Migrate();
 
+var defaultAdminRole = builder.Configuration["DefaultAdminRole"] ?? Environment.GetEnvironmentVariable("DefaultAdminRole") ?? "Admin";
+var defaultAdminEmail = builder.Configuration["DefaultAdminEmail"] ?? Environment.GetEnvironmentVariable("DefaultAdminEmail") ?? "admin@tochange.com";
+var defaultAdminPassword = builder.Configuration["DefaultAdminPassword"] ?? Environment.GetEnvironmentVariable("DefaultAdminPassword") ?? "Admin183!!";
+
 // Create roles if not exists
 var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-var adminRole = await roleManager.FindByNameAsync("Admin");
+var adminRole = await roleManager.FindByNameAsync(defaultAdminRole);
 
 if (adminRole == null)
-    await roleManager.CreateAsync(new IdentityRole("Admin"));
+    await roleManager.CreateAsync(new IdentityRole(defaultAdminRole));
 
 // Create admin user if not exists
 var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-var admin = await userManager.FindByNameAsync("admin@tochange.com");
+var admin = await userManager.FindByNameAsync(defaultAdminEmail);
 
 if (admin == null)
 {
-    admin = new IdentityUser("admin@tochange.com")
+    admin = new IdentityUser(defaultAdminEmail)
     {
-        Email = "admin@tochange.com",
+        Email = defaultAdminEmail,
         EmailConfirmed = true
     };
 
-    await userManager.CreateAsync(admin, "Admin183!!");
+    await userManager.CreateAsync(admin, defaultAdminPassword);
 }
 
-if (!await userManager.IsInRoleAsync(admin, "Admin"))
-    await userManager.AddToRoleAsync(admin, "Admin");
+if (!await userManager.IsInRoleAsync(admin, defaultAdminRole))
+    await userManager.AddToRoleAsync(admin, defaultAdminRole);
 
 app.Run();
