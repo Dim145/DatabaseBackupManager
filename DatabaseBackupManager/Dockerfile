@@ -1,20 +1,19 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
-WORKDIR /app
-EXPOSE 80
-EXPOSE 443
-
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+﻿# from dotnet 7
+FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
 WORKDIR /src
 COPY ["DatabaseBackupManager/DatabaseBackupManager.csproj", "DatabaseBackupManager/"]
-RUN dotnet restore "DatabaseBackupManager/DatabaseBackupManager.csproj"
+RUN dotnet restore "DatabaseBackupManager/DatabaseBackupManager.csproj" --use-current-runtime /p:PublishReadyToRun=true
+
 COPY . .
+
 WORKDIR "/src/DatabaseBackupManager"
 RUN dotnet build "DatabaseBackupManager.csproj" -c Release -o /app/build
+RUN dotnet publish "DatabaseBackupManager.csproj" -c Release -o /app/publish --self-contained --use-current-runtime --no-restore /p:PublishTrimmed=true /p:PublishReadyToRun=true
 
-FROM build AS publish
-RUN dotnet publish "DatabaseBackupManager.csproj" -c Release -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
+FROM bash AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "DatabaseBackupManager.dll"]
+COPY --from=build /app/publish .
+
+EXPOSE 80
+EXPOSE 443
+ENTRYPOINT ["DatabaseBackupManager"]
