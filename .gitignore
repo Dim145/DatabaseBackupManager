@@ -6,3 +6,6 @@ riderModule.iml
 
 # Rider
 .idea
+
+# database
+*.db
