@@ -3,31 +3,15 @@ using DatabaseBackupManager.Data.Models;
 
 namespace DatabaseBackupManager.Services;
 
-public class PostgresBackupService: IDatabaseBackup
+public class PostgresBackupService: DatabaseBackup
 {
-    private Server Server { get; set; }
-    private string BackupPath { get; }
-    
-    public PostgresBackupService(Server server, IConfiguration conf): this(conf)
+    public PostgresBackupService(IConfiguration conf, Server server = null) : base(conf.GetValue<string>(Constants.BackupPathAppSettingName), server)
     {
-        Server = server;
-    }
-
-    public PostgresBackupService(IConfiguration conf)
-    {
-        BackupPath = conf.GetValue<string>("BackupPath");
-        
         if (string.IsNullOrEmpty(BackupPath))
             throw new Exception("BackupPath is not set in appsettings.json");
     }
 
-    public IDatabaseBackup ForServer(Server server)
-    {
-        Server = server;
-        return this;
-    }
-
-    public async Task<Backup> BackupDatabase(string databaseName, CancellationToken token = default)
+    public override async Task<Backup> BackupDatabase(string databaseName, CancellationToken token = default)
     {
         if (Server is null)
             return null;
@@ -63,7 +47,7 @@ public class PostgresBackupService: IDatabaseBackup
         };
     }
 
-    public async Task<bool> RestoreDatabase(Backup backup, CancellationToken token = default)
+    public override async Task<bool> RestoreDatabase(Backup backup, CancellationToken token = default)
     {
         if (Server is null)
             return false;
