@@ -4,20 +4,22 @@ using Microsoft.EntityFrameworkCore;
 using DatabaseBackupManager.Data;
 using DatabaseBackupManager.Services;
 using Hangfire;
-using Hangfire.SQLite;
+using Hangfire.Storage.SQLite;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var dataConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var hangfireDbPath = builder.Configuration.GetValue<string>("HangfireDbPath") ?? Environment.GetEnvironmentVariable("HangfireDbPath") ?? "hangfire.db";
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
+    options.UseSqlite(dataConnectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddHangfire(config => 
     config.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
         .UseSimpleAssemblyNameTypeSerializer()
-        .UseSQLiteStorage(connectionString)
+        .UseSQLiteStorage(hangfireDbPath)
         .UseRecommendedSerializerSettings()
     );
 

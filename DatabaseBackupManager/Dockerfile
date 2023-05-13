@@ -1,19 +1,42 @@
-﻿# from dotnet 7
-FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
+﻿FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["DatabaseBackupManager/DatabaseBackupManager.csproj", "DatabaseBackupManager/"]
-RUN dotnet restore "DatabaseBackupManager/DatabaseBackupManager.csproj" --use-current-runtime /p:PublishReadyToRun=true
+RUN dotnet restore "DatabaseBackupManager/DatabaseBackupManager.csproj" --runtime linux-x64
 
 COPY . .
 
 WORKDIR "/src/DatabaseBackupManager"
-RUN dotnet build "DatabaseBackupManager.csproj" -c Release -o /app/build
-RUN dotnet publish "DatabaseBackupManager.csproj" -c Release -o /app/publish --self-contained --use-current-runtime --no-restore /p:PublishTrimmed=true /p:PublishReadyToRun=true
+RUN dotnet publish "DatabaseBackupManager.csproj" -c Release -o /app/publish --no-restore --self-contained true --runtime linux-x64
 
-FROM bash AS final
+RUN dotnet dev-certs https --clean
+RUN dotnet dev-certs https -ep /app/publish/https/DatabaseBackupManager.pfx -p test1345
+RUN dotnet dev-certs https --trust
+
+FROM debian:buster-slim AS final
+
+RUN apt-get update && apt-get install -y \
+    libgdiplus \
+    openssl \
+    postgresql-client \
+    default-mysql-client \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
+
 COPY --from=build /app/publish .
 
 EXPOSE 80
 EXPOSE 443
-ENTRYPOINT ["DatabaseBackupManager"]
+
+ENV ASPNETCORE_URLS=http://+:80;https://+:443
+ENV ASPNETCORE_Kestrel__Certificates__Default__Password=test1345
+ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/app/https/DatabaseBackupManager.pfx
+
+RUN mkdir /data
+RUN touch /data/app.db
+
+RUN chmod +x DatabaseBackupManager
+RUN chmod 777 /data/app.db
+
+ENTRYPOINT ["./DatabaseBackupManager"]
+
