@@ -16,9 +16,7 @@ public class PostgresBackupService: DatabaseBackup
         if (Server is null)
             return null;
         
-        var date = DateTime.Now;
-        var filename = $"{databaseName}_{date:yyyyMMddHHmmss}.pg_backup";
-        var path = Path.Combine(BackupPath, Server.Type.ToString(), Server.Name, filename);
+        var path = GetPathForBackup(databaseName);
 
         var cmd = $"pg_dump -U {Server.User} -h {Server.Host} -p {Server.Port} -d {databaseName} -f {path} -F p";
         
@@ -42,7 +40,7 @@ public class PostgresBackupService: DatabaseBackup
 
         return new Backup
         {
-            BackupDate = date,
+            BackupDate = DateTime.Now,
             Path = path,
         };
     }

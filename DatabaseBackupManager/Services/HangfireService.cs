@@ -20,7 +20,9 @@ public class HangfireService
 
     public async Task BackupDatabase(int backupJobId)
     {
-        var backupJob = await DbContext.BackupJobs.FindAsync(backupJobId);
+        var backupJob = await DbContext.BackupJobs
+            .Include(b => b.Server)
+            .FirstOrDefaultAsync(b => b.Id == backupJobId);
         
         if (backupJob is null)
             throw new Exception($"BackupJob with id {backupJobId} not found");
@@ -34,6 +36,7 @@ public class HangfireService
         var backupService = (backupJob.Server.Type switch
         {
             DatabaseTypes.Postgres => new PostgresBackupService(Configuration),
+            DatabaseTypes.MySql => new MySqlBackupService(Configuration) as DatabaseBackup,
             _ => throw new Exception($"Server type {backupJob.Server.Type} is not supported")
         }).ForServer(backupJob.Server);
 
@@ -76,7 +79,7 @@ public class HangfireService
 
         foreach (var job in jobs)
         {
-            RecurringJob.AddOrUpdate($"BackupJob-${job.Name}-{job.Id}", () => hangfire.BackupDatabase(job.Id), job.Cron);
+            RecurringJob.AddOrUpdate($"BackupJob-{job.Name}-{job.Id}", () => hangfire.BackupDatabase(job.Id), job.Cron);
         }
     }
 }

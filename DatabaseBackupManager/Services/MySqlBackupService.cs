@@ -13,10 +13,8 @@ public class MySqlBackupService: DatabaseBackup
     {
         if(Server is null)
             return null;
-        
-        var date = DateTime.Now;
-        var filename = $"{databaseName}_{date:yyyyMMddHHmmss}.sql";
-        var path = Path.Combine(BackupPath, Server.Type.ToString(), Server.Name, filename);
+
+        var path = GetPathForBackup(databaseName);
         
         var cmd = $"mysqldump -u {Server.User} -p{Server.Password} -h {Server.Host} -P {Server.Port} \"{databaseName}\" --add-locks --lock-tables --result-file=\"{path}\"";
         
@@ -31,13 +29,17 @@ public class MySqlBackupService: DatabaseBackup
         });
         
         await process.WaitForExitAsync(cancellationToken);
-        
+
         if (process.ExitCode != 0)
-            throw new Exception($"mysqldump failed with exit code {process.ExitCode}");
+        {
+            var error = await process.StandardError.ReadToEndAsync();
+            
+            throw new Exception($"mysqldump failed with exit code {process.ExitCode}: {error}");
+        }
 
         return new Backup
         {
-            BackupDate = date,
+            BackupDate = DateTime.Now,
             Path = path,
         };
     }
