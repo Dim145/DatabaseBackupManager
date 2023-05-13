@@ -2,9 +2,9 @@ using DatabaseBackupManager.Authorizations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DatabaseBackupManager.Data;
+using DatabaseBackupManager.Services;
 using Hangfire;
 using Hangfire.SQLite;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +31,10 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped<PostgresBackupService>();
+
+builder.Services.AddScoped<HangfireService>();
 
 var app = builder.Build();
 
@@ -96,5 +100,7 @@ if (admin == null)
 
 if (!await userManager.IsInRoleAsync(admin, defaultAdminRole))
     await userManager.AddToRoleAsync(admin, defaultAdminRole);
+
+await HangfireService.InitHangfireRecurringJob(context);
 
 app.Run();
