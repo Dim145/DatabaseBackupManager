@@ -29,6 +29,10 @@
                         </li>
                         
                         <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="BackupJob" asp-action="Index">Backup Jobs</a>
+                        </li>
+                        
+                        <li class="nav-item">
                             <a class="nav-link text-dark" href="/hangfire">Hangfire</a>
                         </li>
                     }
@@ -52,6 +56,20 @@
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
+<script src="~/lib/popper/popper.js"></script>
+<script src="~/lib/tippy/tippy-bundle.umd.min.js"></script>
 @await RenderSectionAsync("Scripts", required: false)
+
+<script type="text/javascript">
+    tippy('[data-tippy]', {
+        allowHTML: true,
+        placement: 'top',
+        arrow: true,
+        interactive: true,
+        content(reference) {
+            return reference.getAttribute('data-tippy');
+        },
+    });
+</script>
 </body>
 </html>

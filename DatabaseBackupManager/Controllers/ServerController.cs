@@ -11,6 +11,7 @@ using Npgsql;
 
 namespace DatabaseBackupManager.Controllers;
 
+[Route("servers")]
 public class ServerController: Controller
 {
     private ApplicationDbContext DbContext { get; }

@@ -1,0 +1,41 @@
+@using Cronos
+@model System.Collections.Generic.List<DatabaseBackupManager.Data.Models.BackupJob>
+
+@{
+    ViewBag.Title = "list of backup jobs";
+}
+
+<h2>List of backup jobs</h2>
+
+<div class="row mb-2">
+    <div class="col">
+        <a asp-controller="BackupJob" asp-action="Create" class="btn btn-success">Add new job</a>
+    </div>
+</div>
+
+<table class="table table-striped table-hover table-bordered table-responsive">
+    <tr>
+        <th>Name</th>
+        <th>Cron</th>
+        <th>databases</th>
+        <th>server name</th>
+        <th>Actions</th>
+    </tr>
+    
+    @foreach (var backupJob in Model)
+    {
+        <tr class="@(backupJob.Enabled ? "" : "bg-danger")">
+            <td>@backupJob.Name</td>
+            <td data-tippy="@( backupJob.Enabled ? $"Next execution: {CronExpression.Parse(backupJob.Cron).GetNextOccurrence(DateTime.UtcNow, true):dd/MM/yyyy HH:mm:ss}" : "")">
+                @backupJob.Cron
+            </td>
+            <td>@backupJob.DatabaseNames</td>
+            <td>@(backupJob.Server?.Name ?? "no information")</td>
+            <td>
+                <a asp-controller="BackupJob" asp-action="Edit" asp-route-id="@backupJob.Id" class="btn btn-primary">Edit</a>
+                <a asp-controller="BackupJob" asp-action="Delete" asp-route-id="@backupJob.Id" class="btn btn-danger">Delete</a>
+            </td>
+        </tr>
+    }
+</table>
+
