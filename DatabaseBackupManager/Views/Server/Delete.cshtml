@@ -1,0 +1,25 @@
+@model DatabaseBackupManager.Data.Models.Server
+
+@{
+    ViewBag.Title = "Delete server";
+}
+
+<h2>Delete server @Model.Name ?</h2>
+
+<p class="alert alert-warning">
+    Warning: this action also delete all backups jobs associated with this server. <br/>
+    backup files are not deleted.
+</p>
+
+<form asp-action="Delete" asp-route-id="@Model.Id">
+    <input type="hidden" asp-for="Id" />
+    
+    <div class="row mt-2">
+        <div class="col">
+            <div class="form-group">
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                <input type="submit" value="Delete" class="btn btn-danger"/>
+            </div>
+        </div>
+    </div>
+</form>

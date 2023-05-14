@@ -1,0 +1,15 @@
+@model DatabaseBackupManager.Data.Models.Server
+
+<div class="card" style="width: 18rem;">
+    <div class="card-body">
+        <h5 class="card-title">#@Model.Id - @Model.Name</h5>
+        <h6 class="card-subtitle mb-2 text-muted">@Model.Host</h6>
+        <p class="card-text">
+            Type of database: @Model.Type <br/>
+            Username: @Model.User <br/>
+            Port: @Model.Port <br/>
+        </p>
+        <a asp-controller="Server" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Editer</a>
+        <a asp-controller="Server" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Supprimer</a>
+    </div>
+</div>

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using DatabaseBackupManager.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using MySql.Data.MySqlClient;
@@ -10,19 +11,30 @@ namespace DatabaseBackupManager.Data.Models;
 
 public class Server: BaseModel
 {
+    [Required] 
     public DatabaseTypes Type { get; set; }
     
     [Required]
     public string Name { get; set; }
     
+    [Required]
     public string Host { get; set; }
+    
+    [Required]
     public string User { get; set; }
+    
+    [Required]
+    [DataType(DataType.Password)]
     public string Password { get; set; }
+    
+    [Required]
+    [Range(1, 65535)]
     public int Port { get; set; }
 
     private string _connectionString;
 
     [NotMapped]
+    [ValidateNever]
     public string ConnectionString => _connectionString ??= Type switch
     {
         DatabaseTypes.Postgres => new NpgsqlConnectionStringBuilder

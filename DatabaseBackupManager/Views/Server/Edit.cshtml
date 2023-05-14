@@ -1,0 +1,31 @@
+@model DatabaseBackupManager.Data.Models.Server
+
+@{
+    ViewBag.Title = "Edit server";
+}
+
+<h2>Edit server @Model.Name</h2>
+
+<form asp-action="Edit" asp-route-id="@Model.Id">
+    <input type="hidden" asp-for="Id" />
+    
+    @if(ViewContext.ModelState.ContainsKey("ConnectionString"))
+    {
+        <div class="row my-4">
+            <div class="col">
+                <span asp-validation-for="ConnectionString" class="alert alert-info"></span>
+            </div>
+        </div>
+    }
+    
+    <partial name="_ServerForm" model="@Model" />
+    
+    <div class="row mt-2">
+        <div class="col">
+            <div class="form-group">
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                <input type="submit" value="Test and Save" class="btn btn-primary"/>
+            </div>
+        </div>
+    </div>
+</form>

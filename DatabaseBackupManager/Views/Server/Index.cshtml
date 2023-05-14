@@ -1,0 +1,33 @@
+@model System.Collections.Generic.List<DatabaseBackupManager.Data.Models.Server>
+
+@{
+    ViewBag.Title = "Servers list";
+}
+
+<h2>Servers</h2>
+
+<div class="row">
+    <div class="col">
+        <p>
+            <a asp-controller="Server" asp-action="Create" class="btn btn-success">Create New</a>
+        </p>    
+    </div>
+    
+    <div class="col text-end">
+        <form method="get">
+            <input type="text" placeholder="search in name" name="sn" class="form-control d-inline" style="max-width: 150px;" value="@ViewBag.SearchName" />
+            <button type="submit" class="btn btn-secondary">
+                search
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    @foreach (var server in Model)
+    {
+        <div class="col-3">
+            <partial name="_ServerCardItem" model="@server" />
+        </div>
+    }
+</div>
