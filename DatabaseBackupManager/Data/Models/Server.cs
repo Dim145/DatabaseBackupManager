@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Common;
 using DatabaseBackupManager.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Data.SqlClient;
@@ -66,5 +67,43 @@ public class Server: BaseModel
         }.ToString(),
         
         _ => throw new ArgumentOutOfRangeException(nameof(Type), "Database type not supported")
+    };
+
+    public async Task<string[]> ListDatabases()
+    {
+        var connection = GetConnection();
+        
+        await connection.OpenAsync();
+        
+        var command = connection.CreateCommand();
+        
+        command.CommandText = Type switch
+        {
+            DatabaseTypes.Postgres => "SELECT datname FROM pg_database WHERE datistemplate = false;",
+            DatabaseTypes.MySql => "SHOW DATABASES;",
+            DatabaseTypes.SqlServer => "SELECT name FROM master.dbo.sysdatabases;",
+            DatabaseTypes.Sqlite => "SELECT name FROM sqlite_master WHERE type='table';",
+            _ => throw new ArgumentOutOfRangeException(nameof(Type), "Database type not supported")
+        };
+        
+        var reader = await command.ExecuteReaderAsync();
+        
+        var databases = new List<string>();
+        
+        while (await reader.ReadAsync())
+        {
+            databases.Add(reader.GetString(0));
+        }
+        
+        await connection.CloseAsync();
+        
+        return databases.ToArray();
+    }
+
+    public DbConnection GetConnection() => Type switch
+    {
+        DatabaseTypes.Postgres => new NpgsqlConnection(ConnectionString),
+        DatabaseTypes.MySql => new MySqlConnection(ConnectionString),
+        _ => throw new Exception($"Server type {Type} is not supported")
     };
 }

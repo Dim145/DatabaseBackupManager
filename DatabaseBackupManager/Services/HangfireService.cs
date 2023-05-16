@@ -18,6 +18,7 @@ public class HangfireService
         Configuration = configuration;
     }
 
+    [AutomaticRetry(Attempts = 1, DelaysInSeconds = new []{ 30 })]
     public async Task BackupDatabase(int backupJobId)
     {
         var backupJob = await DbContext.BackupJobs

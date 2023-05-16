@@ -132,18 +132,13 @@ public class ServerController: Controller
 
         try
         {
-            var backupService = server.Type switch
-            {
-                DatabaseTypes.Postgres => new NpgsqlConnection(server.ConnectionString) as DbConnection,
-                DatabaseTypes.MySql => new MySqlConnection(server.ConnectionString),
-                _ => throw new Exception($"Server type {server.Type} is not supported")
-            };
+            var serverConnection = server.GetConnection();
             
-            await backupService.OpenAsync();
+            await serverConnection.OpenAsync();
             
-            var res = backupService.State == ConnectionState.Open ? string.Empty : "Connection is not successful";
+            var res = serverConnection.State == ConnectionState.Open ? string.Empty : "Connection is not successful";
 
-            await backupService.CloseAsync();
+            await serverConnection.CloseAsync();
 
             return res;
         }

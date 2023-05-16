@@ -1,0 +1,60 @@
+/* to customize progress bar */
+/*create variables for colors*/
+:root {
+    --prm-color: #007bff;
+    --prm-gray: #e9ecef;
+}
+
+.steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    position: relative;
+}
+.step-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--bs-secondary);
+    transition: .4s;
+    /* align span text to height center */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.step-button[aria-expanded="true"] {
+    width: 60px;
+    height: 60px;
+    background-color: var(--bs-primary);
+    color: #fff;
+}
+.done {
+    background-color: var(--bs-primary);
+    color: #fff;
+}
+.step-item {
+    z-index: 10;
+    text-align: center;
+    text-align: -webkit-center;
+    text-align: -moz-center;
+}
+#progress {
+    -webkit-appearance:none;
+    position: absolute;
+    width: 95%;
+    z-index: 5;
+    height: 10px;
+    margin-left: 18px;
+    margin-bottom: 18px;
+}
+/* to customize progress bar */
+#progress::-webkit-progress-value {
+    background-color: var(--bs-primary);
+    transition: .5s ease;
+}
+#progress::-webkit-progress-bar {
+    background-color: var(--bs-secondary);
+
+}

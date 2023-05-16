@@ -1,7 +1,167 @@
 @model DatabaseBackupManager.Data.Models.BackupJob
 
 @{
-    ViewBag.Title = "title";
+    ViewBag.Title = "create a backup job";
+    
+    var servers = ViewBag.Servers as List<DatabaseBackupManager.Data.Models.Server>;
+    var databases = ViewBag.Databases as string[];
+    
+    var step = Model.DatabaseNames switch {
+        null when Model.ServerId <= 0 => 1,
+        null => 2,
+        _ => 3
+    };
+    
+    Model.Cron ??= "*/1 * * * *";
 }
 
-<h2>title</h2>
+<form method="post">
+    <div class="container">
+        <div class="accordion" id="stepper">
+            <div class="steps">
+                <progress
+                    id="progress"
+                    value="@(step switch{
+                                1 => 10,
+                                2 => 50,
+                                3 => 90,
+                               })"
+                    max="100">
+                    
+                </progress>
+                <div class="step-item">
+                    <span class="step-button text-center @(step >= 1 ? "done" : "") @(step != 1 ? "collapsed" : "")"
+                            data-bs-target="#select-server" aria-expanded="@(step == 1 ? "true" : "false")" aria-controls="select-server">
+                        1
+                    </span>
+                    <div class="step-title">
+                        Select Server
+                    </div>
+                </div>
+                <div class="step-item">
+                    <span class="step-button text-center @(step >= 2 ? "done" : "") @(step != 1 ? "collapsed" : "")"
+                            data-bs-target="#select-databases" aria-expanded="@(step == 2 ? "true" : "false")" aria-controls="select-databases">
+                        2
+                    </span>
+                    <div class="step-title">
+                        Select Databases
+                    </div>
+                </div>
+                <div class="step-item">
+                    <span class="step-button text-center @(step >= 3 ? "done" : "") @(step != 1 ? "collapsed" : "")"
+                            data-bs-target="#backup-settings" aria-expanded="@(step == 3 ? "true" : "false")" aria-controls="backup-settings">
+                        3
+                    </span>
+                    <div class="step-title">
+                        Backup Settings
+                    </div>
+                </div>
+            </div>
+    
+            <div class="card">
+                <div id="select-server" class="collapse @(step == 1 ? "show" : "")" aria-labelledby="select-server-title" data-bs-parent="#stepper">
+                    <div class="card-header" id="select-server-title">
+                        Select backup server in which you want to create a backup job.
+                    </div>
+                    
+                    <div class="card-body">
+                        <select
+                            asp-for="ServerId"
+                            required="@(step == 1)"
+                            class="form-select mb-2"
+                            asp-items='servers?.Select(s => new SelectListItem($"{s.Name} ({s.Type})", s.Id.ToString()))'>
+                            
+                        </select> 
+                        
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div id="select-databases" class="collapse @(step == 2 ? "show" : "")" aria-labelledby="select-databases-title" data-bs-parent="#stepper">
+                    <div class="card-header" id="select-databases-title">
+                        Select databases you want to backup.
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <select
+                                    asp-for="Databases"
+                                    class="form-select mb-2"
+                                    multiple
+                                    required="@(step == 2)"
+                                    asp-items='databases?.Select(d => new SelectListItem(d, d))'>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col">
+                                <a asp-controller="BackupJob" asp-action="Create">
+                                    <button type="button" class="btn btn-secondary">
+                                        Previous
+                                    </button>
+                                </a>
+                            </div>
+                            
+                            <div class="col text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div id="backup-settings" class="collapse @(step == 3 ? "show" : "")" aria-labelledby="backup-settings-title"
+                     data-bs-parent="#stepper">
+                    <div class="card-header" id="backup-settings-title">
+                        Name and recurrence of the backup job.
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label asp-for="Name" class="form-label"></label>
+                                <input asp-for="Name" class="form-control mb-2" required="@(step == 3)" />
+                                
+                                <label asp-for="Cron" class="form-label"></label>
+                                <input 
+                                    asp-for="Cron" 
+                                    class="form-control"
+                                    required="@(step == 3)"
+                                    onkeyup="onCronChange.bind(this)()" />
+                                <div class="text-center" id="cron-description">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col">
+                                <button type="button" class="btn btn-secondary" onclick="history.back()">
+                                    Previous
+                                </button>
+                            </div>
+                            
+                            <div class="col text-end">
+                                <button type="submit" class="btn btn-success">
+                                    Create
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <script src="~/lib/cronstrue/cronstrue.min.js" async></script>
+                        <script src="~/js/backupjobs/create.min.js"></script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

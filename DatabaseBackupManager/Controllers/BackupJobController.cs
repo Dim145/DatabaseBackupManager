@@ -34,6 +34,8 @@ public class BackupJobController: Controller
     [HttpGet("new")]
     public IActionResult Create()
     {
+        ViewBag.Servers = DbContext.Servers.ToList();
+        
         return View(new BackupJob());
     }
     
@@ -41,8 +43,23 @@ public class BackupJobController: Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(BackupJob backupJob)
     {
-        if (!ModelState.IsValid)
+        ViewBag.Servers = DbContext.Servers.ToList();
+        
+        if (backupJob.ServerId <= 0)
+        {
             return View(backupJob);
+        }
+        
+        var server = await DbContext.Servers.FirstOrDefaultAsync(s => s.Id == backupJob.ServerId);
+        
+        ViewBag.Databases = await server.ListDatabases();
+
+        if (string.IsNullOrWhiteSpace(backupJob.DatabaseNames) || string.IsNullOrWhiteSpace(backupJob.Cron) || string.IsNullOrWhiteSpace(backupJob.Name))
+        {
+            return View(backupJob);
+        }
+        
+        backupJob.Enabled = true;
 
         DbContext.BackupJobs.Add(backupJob);
         await DbContext.SaveChangesAsync();
