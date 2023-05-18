@@ -21,7 +21,8 @@ public class ApplicationDbContext : IdentityDbContext
         SaveChangesCallbacks = new List<Action>
         {
             UpdateTimestamps,
-            SynchronizeBackupJobsWithHangfire
+            SynchronizeBackupJobsWithHangfire,
+            SynchronizeBackupWithFiles
         };
     }
 
@@ -67,6 +68,24 @@ public class ApplicationDbContext : IdentityDbContext
         
         foreach (var entity in entities)
             entity.UpdatedAt = DateTime.Now;
+    }
+
+    private void SynchronizeBackupWithFiles()
+    {
+        var changedBackupTrackers = ChangeTracker.Entries()
+            .Where(x => x is { Entity: Backup, State: EntityState.Deleted })
+            .ToList();
+
+        foreach (var changedBackupTracker in changedBackupTrackers)
+        {
+            var path = (changedBackupTracker.Entity as Backup)?.Path;
+            
+            if(string.IsNullOrWhiteSpace(path))
+                continue;
+            
+            if (File.Exists(path))
+                File.Delete(path);
+        }
     }
 
     private void SynchronizeBackupJobsWithHangfire()

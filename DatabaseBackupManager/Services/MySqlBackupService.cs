@@ -48,13 +48,15 @@ public class MySqlBackupService: DatabaseBackup
     {
         if (Server is null)
             return false;
-        
-        var databaseName = Path.GetFileNameWithoutExtension(backup.Path)?.Split('_')[0];
+
+        var path = GetPathOrUncompressedPath(backup);
+
+        var databaseName = Path.GetFileNameWithoutExtension(path)?.Split('_')[0];
         
         if (string.IsNullOrEmpty(databaseName))
             return false;
         
-        var cmd = $"mysql -u {Server.User} -p{Server.Password} -h {Server.Host} -P {Server.Port} \"{databaseName}\" < \"{backup.Path}\"";
+        var cmd = $"mysql -u {Server.User} -p{Server.Password} -h {Server.Host} -P {Server.Port} \"{databaseName}\" < \"{path}\"";
         
         var process = Process.Start(new ProcessStartInfo
         {
@@ -68,6 +70,9 @@ public class MySqlBackupService: DatabaseBackup
         
         await process.WaitForExitAsync(cancellationToken);
         
+        if(backup.Compressed && File.Exists(path))
+            File.Delete(path);
+
         if (process.ExitCode != 0)
             throw new Exception($"mysql restore failed with exit code {process.ExitCode}");
         

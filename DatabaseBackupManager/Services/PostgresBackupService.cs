@@ -50,12 +50,14 @@ public class PostgresBackupService: DatabaseBackup
         if (Server is null)
             return false;
         
-        var databaseName = Path.GetFileNameWithoutExtension(backup.Path)?.Split('_')[0];
+        var path = GetPathOrUncompressedPath(backup);
+        
+        var databaseName = Path.GetFileNameWithoutExtension(path)?.Split('_')[0];
         
         if (string.IsNullOrEmpty(databaseName))
             return false;
         
-        var cmd = $"pg_restore -U {Server.User} -h {Server.Host} -p {Server.Port} -d {databaseName} -c {backup.Path}";
+        var cmd = $"pg_restore -U {Server.User} -h {Server.Host} -p {Server.Port} -d {databaseName} -c {path}";
         
         var process = Process.Start(new ProcessStartInfo
         {
@@ -72,6 +74,9 @@ public class PostgresBackupService: DatabaseBackup
         await process.StandardInput.WriteLineAsync(Server.Password);
         
         await process.WaitForExitAsync(token);
+        
+        if(backup.Compressed && File.Exists(path))
+            File.Delete(path);
         
         return process.ExitCode == 0;
     }

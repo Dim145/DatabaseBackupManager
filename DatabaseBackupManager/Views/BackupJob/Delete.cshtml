@@ -4,4 +4,19 @@
     ViewBag.Title = "title";
 }
 
-<h2>title</h2>
+<h2>Delete backup job @Model.Name ?</h2>
+
+<p class="alert alert-warning">
+    Warning: this action also delete all backups associated with this job. <br/>
+</p>
+
+<form asp-action="DeletePost" asp-route-id="@Model.Id">
+    <div class="row mt-2">
+        <div class="col">
+            <div class="form-group">
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                <input type="submit" value="Delete" class="btn btn-danger"/>
+            </div>
+        </div>
+    </div>
+</form>

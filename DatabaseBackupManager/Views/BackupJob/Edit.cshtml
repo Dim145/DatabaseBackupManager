@@ -4,4 +4,43 @@
     ViewBag.Title = "title";
 }
 
-<h2>title</h2>
+<h2>Edit backup job @Model.Name</h2>
+
+<form asp-action="Edit" method="post">
+    <label asp-for="Cron" class="form-label"></label>
+    <input 
+        asp-for="Cron" 
+        class="form-control cron-editor"
+        required
+        onkeyup="onCronChange.bind(this)()" />
+    <div class="text-center" id="cron-description">
+        
+    </div>
+    
+    <br/>
+    
+    <label asp-for="Retention" class="form-label"></label>
+    <input asp-for="Retention" class="form-control time-mask" required />
+    <span class="small">dd:hh:mm:ss</span>
+    
+    <br/>
+    
+    <input type="checkbox" asp-for="Enabled" />
+    <label asp-for="Enabled" class="form-label"></label>
+    
+    <br/>
+    <br/>
+    
+    <button type="submit" class="btn btn-success">
+        Save
+    </button>
+</form>
+
+<script src="~/lib/cronstrue/cronstrue.min.js" async></script>
+<script src="~/js/backupjobs/cron_input_funcs.min.js"></script>
+
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        onCronChange.bind($('.cron-editor').get(0))();
+    });
+</script>

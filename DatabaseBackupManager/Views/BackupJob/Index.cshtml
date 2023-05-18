@@ -19,19 +19,22 @@
         <th>Cron</th>
         <th>databases</th>
         <th>server name</th>
-        <th>Actions</th>
+        <th colspan="2">Actions</th>
     </tr>
     
     @foreach (var backupJob in Model)
     {
         <tr class="@(backupJob.Enabled ? "" : "bg-danger")">
             <td>@backupJob.Name</td>
-            <td data-tippy="@( backupJob.Enabled ? $"Next execution: {CronExpression.Parse(backupJob.Cron).GetNextOccurrence(DateTime.UtcNow, true):dd/MM/yyyy HH:mm:ss}" : "")">
+            <td data-tippy="@( backupJob.Enabled ? $"Next execution: {CronExpression.Parse(backupJob.Cron).GetNextOccurrence(DateTime.UtcNow, true):dd/MM/yyyy HH:mm:ss}" : "execution is disabled")">
                 @backupJob.Cron
             </td>
             <td>@backupJob.DatabaseNames</td>
             <td>@(backupJob.Server?.Name ?? "no information")</td>
-            <td>
+            <td colspan="2">
+                <form asp-action="ChangeStatus" asp-route-id="@backupJob.Id" class="d-inline">
+                    <button type="submit" class="btn btn-secondary">@(backupJob.Enabled ? "Disable" : "Enable")</button>
+                </form>
                 <a asp-controller="BackupJob" asp-action="Edit" asp-route-id="@backupJob.Id" class="btn btn-primary">Edit</a>
                 <a asp-controller="BackupJob" asp-action="Delete" asp-route-id="@backupJob.Id" class="btn btn-danger">Delete</a>
             </td>

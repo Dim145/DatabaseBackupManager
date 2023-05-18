@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using DatabaseBackupManager.Data.Models;
 
 namespace DatabaseBackupManager.Services;
@@ -29,6 +30,27 @@ public abstract class DatabaseBackup
             Directory.CreateDirectory(path);
         
         return Path.Combine(path, filename);
+    }
+
+    protected static string GetPathOrUncompressedPath(Backup backup)
+    {
+        if (!backup.Compressed)
+            return backup.Path;
+
+        using var archive = ZipFile.OpenRead(backup.Path);
+        var entry = archive.Entries.FirstOrDefault();
+        
+        if (entry is null)
+            throw new Exception($"No entries found in zip file {backup.Path}");
+        
+        var path = Path.Combine(Path.GetDirectoryName(backup.Path) ?? string.Empty, entry.Name);
+        
+        if (File.Exists(path))
+            File.Delete(path);
+        
+        entry.ExtractToFile(path);
+        
+        return path;
     }
     
     public abstract Task<Backup> BackupDatabase(string databaseName, CancellationToken cancellationToken = default);

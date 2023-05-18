@@ -17,6 +17,9 @@ public class BackupJob: BaseModel
     public string Cron { get; set; }
     public bool Enabled { get; set; }
     
+    [DisplayFormat(DataFormatString = "{0:dd\\:hh\\:mm\\:ss}", ApplyFormatInEditMode = true)]
+    public TimeSpan Retention { get; set; }
+    
     [ValidateNever]
     public string DatabaseNames
     {

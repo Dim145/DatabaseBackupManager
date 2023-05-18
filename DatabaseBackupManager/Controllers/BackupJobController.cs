@@ -82,24 +82,33 @@ public class BackupJobController: Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, BackupJob backupJob)
     {
-        if (!ModelState.IsValid)
-            return View(backupJob);
-        
         var existingBackupJob = await DbContext.BackupJobs.FirstOrDefaultAsync(b => b.Id == id);
         
         if (existingBackupJob == null)
             return NotFound();
         
-        existingBackupJob.Name = backupJob.Name;
         existingBackupJob.Cron = backupJob.Cron;
         existingBackupJob.Enabled = backupJob.Enabled;
-        existingBackupJob.DatabaseNames = backupJob.DatabaseNames;
-        existingBackupJob.BackupFormat = backupJob.BackupFormat;
-        existingBackupJob.ServerId = backupJob.ServerId;
+        existingBackupJob.Retention = backupJob.Retention;
         
         await DbContext.SaveChangesAsync();
         
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost("change-status/{id}")]
+    public IActionResult ChangeStatus(int id)
+    {
+        var backupJob = DbContext.BackupJobs.FirstOrDefault(b => b.Id == id);
+        
+        if (backupJob == null)
+            return NotFound();
+        
+        backupJob.Enabled = !backupJob.Enabled;
+        
+        DbContext.SaveChanges();
+        
+        return Redirect(Request.Headers["Referer"].ToString());
     }
     
     [HttpGet("delete/{id}")]
@@ -115,7 +124,7 @@ public class BackupJobController: Controller
     
     [HttpPost("delete/{id}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id, BackupJob backupJob)
+    public async Task<IActionResult> DeletePost(int id)
     {
         var existingBackupJob = await DbContext.BackupJobs.FirstOrDefaultAsync(b => b.Id == id);
         

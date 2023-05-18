@@ -8,6 +8,8 @@ public static class Constants
 {
     public const string InputFieldDatabaseNameSeparator = ",";
     public const string BackupPathAppSettingName = "BackupPath";
+    public const string DayBeforeCompressionName = "dayBeforeCompression";
+    public const string CronForCompressionJobName = "cronForCompressionJob";
     
     internal static void AddOrUpdateHangfireJob(BackupJob backupJob)
     {

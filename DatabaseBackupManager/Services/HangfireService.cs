@@ -1,7 +1,13 @@
+using System.Globalization;
+using System.IO.Compression;
 using DatabaseBackupManager.Data;
+using DatabaseBackupManager.Data.Models;
 using DatabaseBackupManager.Models;
 using Hangfire;
+using Hangfire.Common;
+using Hangfire.Storage.SQLite.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 
 namespace DatabaseBackupManager.Services;
@@ -27,6 +33,8 @@ public class HangfireService
         
         if (backupJob is null)
             throw new Exception($"BackupJob with id {backupJobId} not found");
+
+        BackgroundJob.Enqueue(() => CleanBackupRep(backupJobId));
         
         if(!backupJob.Enabled)
             throw new Exception($"BackupJob '{backupJob.Name}' is not enabled");
@@ -73,7 +81,76 @@ public class HangfireService
             throw new Exception($"Backup of certain databases failed: {string.Join(", ", listOfErrors)}");
     }
 
-    public static async Task InitHangfireRecurringJob(ApplicationDbContext dbContext)
+    [AutomaticRetry(Attempts = 3, DelaysInSeconds = new []{ 10, 30, 60 })]
+    public async Task CleanBackupRep(int backupJobId)
+    {
+        var backupJob = await DbContext.BackupJobs
+            .Include(b => b.Server)
+            .Include(b => b.Backups)
+            .FirstOrDefaultAsync(b => b.Id == backupJobId);
+        
+        if (backupJob is null)
+            throw new Exception($"BackupJob with id {backupJobId} not found");
+        
+        foreach (var backup in backupJob.Backups?.Where(b => DateTime.UtcNow - b.BackupDate > backupJob.Retention) ?? ArraySegment<Backup>.Empty)
+        {
+            DbContext.Backups.Remove(backup);
+        }
+        
+        await DbContext.SaveChangesAsync();
+    }
+
+    public async Task<string> CompressFileIfNeeded()
+    {
+        var dayBeforeCompression = TimeSpan.FromDays(Configuration.GetValue<int>(Constants.DayBeforeCompressionName));
+        var backupRoot = Configuration.GetValue<string>(Constants.BackupPathAppSettingName);
+        
+        var files = Directory.GetFiles(backupRoot, "*.sql", new EnumerationOptions()
+        {
+            RecurseSubdirectories = true,
+            MaxRecursionDepth = 3
+        });
+
+        var listOdRes = new List<string>();
+
+        foreach (var file in files)
+        {
+            var fileNameParts = Path.GetFileNameWithoutExtension(file).Split('_');
+            
+            var fileDate = DateTime.ParseExact(fileNameParts[1], "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+            
+            if(DateTime.UtcNow - fileDate < dayBeforeCompression)
+                continue;
+            
+            var compressedFileName = Path.Combine(Path.GetDirectoryName(file)!, $"{fileNameParts[0]}_{fileDate:yyyyMMddHHmmss}.zip");
+            
+            if (File.Exists(Path.Combine(backupRoot, compressedFileName)))
+                continue;
+            
+            using var zipFile = ZipFile.Open(Path.Combine(backupRoot, compressedFileName), ZipArchiveMode.Create);
+            zipFile.CreateEntryFromFile(file, Path.GetFileName(file));
+            
+            File.Delete(file);
+            
+            listOdRes.Add($"backup {fileNameParts[0]} compressed => {compressedFileName}");
+
+            var backup = await DbContext.Backups.FirstOrDefaultAsync(b => b.Path == file);
+            
+            if (backup is null)
+                continue;
+            
+            backup.Path = compressedFileName;
+        }
+        
+        await DbContext.SaveChangesAsync();
+        
+        if(listOdRes.IsNullOrEmpty())
+            listOdRes.Add("No files are compressed");
+
+        return string.Join("\n", listOdRes);
+    }
+
+    public static async Task InitHangfireRecurringJob(ApplicationDbContext dbContext, IConfiguration conf)
     {
         var hangfire = new HangfireService(null, null);
         var jobs = await dbContext.BackupJobs.Where(b => b.Enabled).ToArrayAsync();
@@ -82,5 +159,9 @@ public class HangfireService
         {
             RecurringJob.AddOrUpdate($"BackupJob-{job.Name}-{job.Id}", () => hangfire.BackupDatabase(job.Id), job.Cron);
         }
+        
+        var cron = conf.GetValue<string>(Constants.CronForCompressionJobName);
+        
+        RecurringJob.AddOrUpdate("Compress backups", () => hangfire.CompressFileIfNeeded(), cron);
     }
 }
