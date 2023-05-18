@@ -71,4 +71,39 @@ public class BackupController: Controller
 
         return View(backups);
     }
+    
+    [HttpGet("download/{id}")]
+    public async Task<IActionResult> Download(int id)
+    {
+        var backup = await DbContext.Backups
+            .Include(b => b.Job)
+            .Include(b => b.Job.Server)
+            .FirstOrDefaultAsync(b => b.Id == id);
+
+        if (backup is null)
+            return NotFound();
+
+        var file = System.IO.File.OpenRead(backup.Path);
+        
+        return File(file, "application/octet-stream", backup.FileName);
+    }
+    
+    [HttpGet("delete/{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var backup = await DbContext.Backups
+            .Include(b => b.Job)
+            .Include(b => b.Job.Server)
+            .FirstOrDefaultAsync(b => b.Id == id);
+
+        if (backup is null)
+            return NotFound();
+
+        System.IO.File.Delete(backup.Path);
+        
+        DbContext.Backups.Remove(backup);
+        await DbContext.SaveChangesAsync();
+        
+        return RedirectToAction("Index");
+    }
 }
