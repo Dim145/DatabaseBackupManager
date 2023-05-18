@@ -1,0 +1,78 @@
+@model List<DatabaseBackupManager.Data.Models.Backup>
+
+
+@{
+    ViewBag.Title = "list of backup jobs";
+
+    var filters = ViewBag.Filters as BackupFilterViewModel;
+    var page = ViewBag.Page as int? ?? 1;
+    var pageSize = ViewBag.PageSize as int? ?? 10;
+    var totalPageCount = ViewBag.TotalPages as int? ?? 1;
+}
+
+<form method="get">
+<table class="table table-striped table-hover table-bordered table-responsive">
+    <tr>
+        <th>FileName</th>
+        <th>Date</th>
+        <th>File Size</th>
+        <th>JobName</th>
+        <th>Server</th>
+        <th colspan="2">Actions</th>
+    </tr>
+    
+    
+    <tr>
+        <td><input class="form-control" type="text" name="fileName" value="@(filters?.FileName)" /></td>
+        <td><input class="form-control" type="date" name="date" value="@(filters?.Date?.ToString("yyyy-MM-dd"))" /></td>
+        <td><input class="form-control" type="number" name="fileSize" value="@(filters?.FileSize)" /></td>
+        <td><input class="form-control" type="text" name="jobName" value="@(filters?.JobName)" /></td>
+        <td><input class="form-control" type="text" name="server" value="@(filters?.Server)" /></td>
+        <td colspan="2">
+            <input type="submit" class="d-none" value="submit"/>
+            <input type="reset" class="btn btn-warning" value="reset filters" />
+        </td>
+    </tr>
+    
+    @foreach (var backup in Model)
+    {
+        <tr>
+            <td>@backup.FileName</td>
+            <td>@backup.BackupDate.ToString("dd/MM/yyyy HH:mm:ss")</td>
+            <td>@backup.GetFileSize()</td>
+            <td>@(backup.Job?.Name ?? "no information")</td>
+            <td>@(backup.Job?.Server?.Name ?? "no information")</td>
+            <td colspan="2">
+                
+            </td>
+        </tr>
+    }
+    
+    @if (totalPageCount > 1)
+    {
+        <tr>
+            <td colspan="7">
+                <div class="row">
+                    <div class="col-4">
+                        @if (page > 1)
+                        {
+                            <button class="btn btn-secondary" name="page" value="@(page - 1)">previous</button>
+                        }
+                    </div>
+                    
+                    <div class="col-4 text-center">
+                        page @(page) of @(totalPageCount)
+                    </div>
+                    
+                    <div class="col-4 text-end">
+                        @if(page < totalPageCount)
+                        {
+                            <button class="btn btn-secondary" name="page" value="@(page + 1)">next</button>
+                        }
+                    </div>
+                </div>
+            </td>
+        </tr>
+    }
+</table>
+</form>

@@ -103,6 +103,6 @@ if (admin == null)
 if (!await userManager.IsInRoleAsync(admin, defaultAdminRole))
     await userManager.AddToRoleAsync(admin, defaultAdminRole);
 
-await HangfireService.InitHangfireRecurringJob(context);
+await HangfireService.InitHangfireRecurringJob(context, builder.Configuration);
 
 app.Run();

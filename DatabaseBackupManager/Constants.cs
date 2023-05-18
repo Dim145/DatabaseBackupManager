@@ -11,6 +11,8 @@ public static class Constants
     public const string DayBeforeCompressionName = "dayBeforeCompression";
     public const string CronForCompressionJobName = "cronForCompressionJob";
     
+    public static readonly string[] FileSizeSuffixes = { "B", "KB", "MB", "GB", "TB" };
+
     internal static void AddOrUpdateHangfireJob(BackupJob backupJob)
     {
         AddOrUpdateHangfireJob(GetJobNameForBackupJob(backupJob), backupJob.Id, backupJob.Cron);

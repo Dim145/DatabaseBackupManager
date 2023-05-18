@@ -115,14 +115,15 @@ public class HangfireService
 
         foreach (var file in files)
         {
-            var fileNameParts = Path.GetFileNameWithoutExtension(file).Split('_');
+            var originalFileName = Path.GetFileNameWithoutExtension(file);
+            var fileNameParts = originalFileName.Split('_');
             
-            var fileDate = DateTime.ParseExact(fileNameParts[1], "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+            var fileDate = DateTime.ParseExact(fileNameParts.Last(), "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
             
             if(DateTime.UtcNow - fileDate < dayBeforeCompression)
                 continue;
             
-            var compressedFileName = Path.Combine(Path.GetDirectoryName(file)!, $"{fileNameParts[0]}_{fileDate:yyyyMMddHHmmss}.zip");
+            var compressedFileName = Path.Combine(Path.GetDirectoryName(file)!, $"{originalFileName}.zip");
             
             if (File.Exists(Path.Combine(backupRoot, compressedFileName)))
                 continue;
@@ -132,7 +133,7 @@ public class HangfireService
             
             File.Delete(file);
             
-            listOdRes.Add($"backup {fileNameParts[0]} compressed => {compressedFileName}");
+            listOdRes.Add($"backup {originalFileName} compressed => {compressedFileName}");
 
             var backup = await DbContext.Backups.FirstOrDefaultAsync(b => b.Path == file);
             

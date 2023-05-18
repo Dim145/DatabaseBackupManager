@@ -52,7 +52,8 @@ public class PostgresBackupService: DatabaseBackup
         
         var path = GetPathOrUncompressedPath(backup);
         
-        var databaseName = Path.GetFileNameWithoutExtension(path)?.Split('_')[0];
+        var filesParts = Path.GetFileNameWithoutExtension(path)?.Split('_') ?? Array.Empty<string>();
+        var databaseName = string.Join("_", filesParts.SkipLast(1));
         
         if (string.IsNullOrEmpty(databaseName))
             return false;
