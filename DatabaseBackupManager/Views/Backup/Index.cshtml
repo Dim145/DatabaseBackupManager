@@ -44,6 +44,7 @@
             <td>@(backup.Job?.Server?.Name ?? "no information")</td>
             <td colspan="2">
                 <a class="btn btn-primary" asp-action="Download" asp-route-id="@backup.Id">download</a>
+                <a class="btn btn-secondary" asp-action="Restore" asp-route-id="@backup.Id">restore</a>
                 
                 <button class="btn btn-danger" onclick="return confirm('this also delete file, are you sure ?')" asp-action="Delete" asp-route-id="@backup.Id">delete</button>
             </td>

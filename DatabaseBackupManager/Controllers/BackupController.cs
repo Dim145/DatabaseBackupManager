@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using DatabaseBackupManager.Data;
 using DatabaseBackupManager.Models;
+using DatabaseBackupManager.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +11,12 @@ namespace DatabaseBackupManager.Controllers;
 public class BackupController: Controller
 {
     private ApplicationDbContext DbContext { get; }
+    private IConfiguration Configuration { get; }
     
-    public BackupController(ApplicationDbContext dbContext)
+    public BackupController(ApplicationDbContext dbContext, IConfiguration configuration)
     {
         DbContext = dbContext;
+        Configuration = configuration;
     }
     
     [HttpGet]
@@ -105,5 +108,57 @@ public class BackupController: Controller
         await DbContext.SaveChangesAsync();
         
         return RedirectToAction("Index");
+    }
+
+    [HttpGet("restore/{id:int}")]
+    public async Task<IActionResult> Restore(int id)
+    {
+        var backup = await DbContext.Backups
+            .Include(b => b.Job)
+            .Include(b => b.Job.Server)
+            .FirstOrDefaultAsync(b => b.Id == id);
+
+        if (backup is null)
+            return NotFound();
+        
+        if(TempData.TryGetValue("Success", out var successValue))
+            ViewBag.Success = successValue;
+        
+        if(TempData.TryGetValue("Error", out var errorValue))
+            ViewBag.Error = errorValue;
+        
+        return View(backup);
+    }
+    
+    [HttpPost("restore/{id:int}")]
+    public async Task<IActionResult> RestorePost(int id)
+    {
+        var backup = await DbContext.Backups
+            .Include(b => b.Job)
+            .Include(b => b.Job.Server)
+            .FirstOrDefaultAsync(b => b.Id == id);
+
+        if (backup is null)
+            return NotFound();
+
+        if (backup.Job?.Server is null)
+            return BadRequest();
+
+        var restoreService = backup.Job.Server.Type.GetService(Configuration).ForServer(backup.Job.Server);
+
+        try
+        {
+            await restoreService.RestoreDatabase(backup);
+            
+            TempData["Success"] = "Database restored successfully";
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine(e);
+            
+            TempData["Error"] = e.Message;
+        }
+
+        return RedirectToAction("Restore", new { id });
     }
 }

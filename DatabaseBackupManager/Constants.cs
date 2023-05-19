@@ -1,4 +1,5 @@
 using DatabaseBackupManager.Data.Models;
+using DatabaseBackupManager.Models;
 using DatabaseBackupManager.Services;
 using Hangfire;
 
@@ -38,5 +39,15 @@ public static class Constants
     internal static string GetJobNameForBackupJob(string jobName, int backupJobId)
     {
         return $"BackupJob-{jobName}-{backupJobId}";
+    }
+
+    public static DatabaseBackup GetService(this DatabaseTypes type, IConfiguration conf)
+    {
+        return type switch
+        {
+            DatabaseTypes.Postgres => new PostgresBackupService(conf),
+            DatabaseTypes.MySql => new MySqlBackupService(conf),
+            _ => throw new Exception($"Server type {type} is not supported")
+        };
     }
 }

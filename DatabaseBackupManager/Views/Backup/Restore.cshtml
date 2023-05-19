@@ -1,0 +1,34 @@
+@model DatabaseBackupManager.Data.Models.Backup
+
+@{
+    ViewBag.Title = "Restore a backup";
+    
+    var successMessage = ViewBag.Success as string;
+    var errorMessage = ViewBag.Error as string;
+}
+
+<br/>
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success" role="alert">
+        @successMessage
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+
+<form asp-action="RestorePost" asp-route-id="@Model.Id">
+    
+    <h4 class="mb-4">
+        Restore backup @Model.FileName to database @string.Join("_", Model.FileName.Split("_").SkipLast(1)) on server "@Model.Job.Server.Name" ?
+    </h4>
+    
+    <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button>
+    <button type="submit" class="btn btn-primary">Restore</button>
+</form>
