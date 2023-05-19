@@ -2,9 +2,6 @@ using System.Data;
 using System.Diagnostics;
 using DatabaseBackupManager.Data.Models;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal;
-using System;
 
 namespace DatabaseBackupManager.Services;
 
@@ -95,6 +92,7 @@ public class SqlServerBackupService: DatabaseBackup
 
     public override async Task<bool> RestoreDatabase(Backup backup, CancellationToken cancellationToken = default)
     {
+        throw new Exception("restoring database is not supported for sql server"); // todo: search for solution ?
         if (Server is null)
             return false;
         

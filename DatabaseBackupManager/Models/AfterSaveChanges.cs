@@ -17,7 +17,6 @@ public class AfterSaveChanges
         State = entry.State;
         
         _changedProperties = entry.Properties
-            .Where(p => p.IsModified)
             .Select(p => new PropertyChanged
             {
                 IsModified = p.IsModified,
