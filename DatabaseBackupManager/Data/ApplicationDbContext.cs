@@ -1,8 +1,10 @@
 ﻿using DatabaseBackupManager.Data.Models;
+using DatabaseBackupManager.Models;
 using DatabaseBackupManager.Services;
 using Hangfire;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using static DatabaseBackupManager.Constants;
 
 namespace DatabaseBackupManager.Data;
@@ -13,14 +15,22 @@ public class ApplicationDbContext : IdentityDbContext
     public virtual DbSet<BackupJob> BackupJobs { get; set; }
     public virtual DbSet<Backup> Backups { get; set; }
     
-    private List<Action> SaveChangesCallbacks { get; }
+    private List<Action> BeforeSaveChangesCallbacks { get; }
+    private List<Action> AfterSaveChangesCallbacks { get; }
+
+    private IEnumerable<AfterSaveChanges> _changes;
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
-        SaveChangesCallbacks = new List<Action>
+        BeforeSaveChangesCallbacks = new List<Action>
         {
             UpdateTimestamps,
+            () => _changes = ChangeTracker.Entries().Where(p => p is {Entity: BaseModel}).Select(p => new AfterSaveChanges(p)).ToList()
+        };
+        
+        AfterSaveChangesCallbacks = new List<Action>
+        {
             SynchronizeBackupJobsWithHangfire,
             SynchronizeBackupWithFiles
         };
@@ -28,35 +38,56 @@ public class ApplicationDbContext : IdentityDbContext
 
     public override int SaveChanges()
     {
-        CallSaveChangesCallbacks();
+        CallBeforeSaveChangesCallbacks();
         
-        return base.SaveChanges();
+        var res = base.SaveChanges();
+        
+        CallAfterSaveChangesCallbacks();
+        
+        return res;
     }
     
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
     {
-        CallSaveChangesCallbacks();
+        CallBeforeSaveChangesCallbacks();
         
-        return await base.SaveChangesAsync(cancellationToken);
+        var res = await base.SaveChangesAsync(cancellationToken);
+        
+        CallAfterSaveChangesCallbacks();
+        
+        return res;
     }
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
-        CallSaveChangesCallbacks();
+        CallBeforeSaveChangesCallbacks();
         
-        return base.SaveChanges(acceptAllChangesOnSuccess);
+        var res = base.SaveChanges(acceptAllChangesOnSuccess);
+        
+        CallAfterSaveChangesCallbacks();
+        
+        return res;
     }
 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
     {
-        CallSaveChangesCallbacks();
+        CallBeforeSaveChangesCallbacks();
         
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        var res = base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        
+        CallAfterSaveChangesCallbacks();
+        
+        return res;
     }
 
-    private void CallSaveChangesCallbacks()
+    private void CallBeforeSaveChangesCallbacks()
     {
-        SaveChangesCallbacks.ForEach(callback => callback());
+        BeforeSaveChangesCallbacks.ForEach(callback => callback());
+    }
+    
+    private void CallAfterSaveChangesCallbacks()
+    {
+        AfterSaveChangesCallbacks.ForEach(callback => callback());
     }
 
     private void UpdateTimestamps()
@@ -72,7 +103,7 @@ public class ApplicationDbContext : IdentityDbContext
 
     private void SynchronizeBackupWithFiles()
     {
-        var changedBackupTrackers = ChangeTracker.Entries()
+        var changedBackupTrackers = _changes
             .Where(x => x is { Entity: Backup, State: EntityState.Deleted })
             .ToList();
 
@@ -90,7 +121,7 @@ public class ApplicationDbContext : IdentityDbContext
 
     private void SynchronizeBackupJobsWithHangfire()
     {
-        var changedBackupJobTrackers = ChangeTracker.Entries()
+        var changedBackupJobTrackers = _changes
             .Where(x => x is { Entity: BackupJob })
             .ToList();
 

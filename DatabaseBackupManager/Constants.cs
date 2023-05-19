@@ -47,6 +47,7 @@ public static class Constants
         {
             DatabaseTypes.Postgres => new PostgresBackupService(conf),
             DatabaseTypes.MySql => new MySqlBackupService(conf),
+            DatabaseTypes.SqlServer => new SqlServerBackupService(conf),
             _ => throw new Exception($"Server type {type} is not supported")
         };
     }

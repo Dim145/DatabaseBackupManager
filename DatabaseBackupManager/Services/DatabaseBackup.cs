@@ -20,10 +20,10 @@ public abstract class DatabaseBackup
         return this;
     }
 
-    protected string GetPathForBackup(string databaseName)
+    protected string GetPathForBackup(string databaseName, string extension = "sql")
     {
         var date = DateTime.Now;
-        var filename = $"{databaseName.Replace(" ", "-")}_{date:yyyyMMddHHmmss}.sql";
+        var filename = $"{databaseName.Replace(" ", "-")}_{date:yyyyMMddHHmmss}.{extension}";
         var path = Path.Combine(BackupPath, Server.Type.ToString(), Server.Name.Replace(" ", "_"));
         
         if (!Directory.Exists(path))

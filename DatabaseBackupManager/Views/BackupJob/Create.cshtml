@@ -140,6 +140,12 @@
                                 <div class="text-center" id="cron-description">
                                     
                                 </div>
+                                
+                                <br/>
+                                
+                                <label asp-for="Retention" class="form-label"></label>
+                                <input asp-for="Retention" class="form-control time-mask" required="@(step == 3)" />
+                                <span class="small">dd:hh:mm:ss</span>
                             </div>
                         </div>
                         

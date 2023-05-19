@@ -34,7 +34,7 @@ public class HangfireService
         if (backupJob is null)
             throw new Exception($"BackupJob with id {backupJobId} not found");
 
-        BackgroundJob.Enqueue(() => CleanBackupRep(backupJobId));
+        //BackgroundJob.Enqueue(() => CleanBackupRep(backupJobId));
         
         if(!backupJob.Enabled)
             throw new Exception($"BackupJob '{backupJob.Name}' is not enabled");
@@ -42,12 +42,7 @@ public class HangfireService
         if(backupJob.Server is null)
             throw new Exception($"BackupJob '{backupJob.Name}' has no server or server is deleted");
 
-        var backupService = (backupJob.Server.Type switch
-        {
-            DatabaseTypes.Postgres => new PostgresBackupService(Configuration),
-            DatabaseTypes.MySql => new MySqlBackupService(Configuration) as DatabaseBackup,
-            _ => throw new Exception($"Server type {backupJob.Server.Type} is not supported")
-        }).ForServer(backupJob.Server);
+        var backupService = backupJob.Server.Type.GetService(Configuration).ForServer(backupJob.Server);
 
         var databases = backupJob.DatabaseNames.Split(Constants.InputFieldDatabaseNameSeparator);
         
@@ -105,7 +100,7 @@ public class HangfireService
         var dayBeforeCompression = TimeSpan.FromDays(Configuration.GetValue<int>(Constants.DayBeforeCompressionName));
         var backupRoot = Configuration.GetValue<string>(Constants.BackupPathAppSettingName);
         
-        var files = Directory.GetFiles(backupRoot, "*.sql", new EnumerationOptions()
+        var files = Directory.GetFiles(backupRoot, "*.sql", new EnumerationOptions
         {
             RecurseSubdirectories = true,
             MaxRecursionDepth = 3

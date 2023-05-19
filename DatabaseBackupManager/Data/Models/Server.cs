@@ -58,7 +58,8 @@ public class Server: BaseModel
         {
             Password = Password,
             DataSource = $"{Host},{Port}",
-            UserID = User
+            UserID = User,
+            TrustServerCertificate = true
         }.ToString(),
         DatabaseTypes.Sqlite => new SqliteConnectionStringBuilder
         {
@@ -104,6 +105,8 @@ public class Server: BaseModel
     {
         DatabaseTypes.Postgres => new NpgsqlConnection(ConnectionString),
         DatabaseTypes.MySql => new MySqlConnection(ConnectionString),
+        DatabaseTypes.SqlServer => new SqlConnection(ConnectionString),
+        DatabaseTypes.Sqlite => new SqliteConnection(ConnectionString),
         _ => throw new Exception($"Server type {Type} is not supported")
     };
 }

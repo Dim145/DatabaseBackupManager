@@ -7,6 +7,8 @@ public class MySqlBackupService: DatabaseBackup
 {
     public MySqlBackupService(IConfiguration conf, Server server = null) : base(conf.GetValue<string>(Constants.BackupPathAppSettingName), server)
     {
+        if (string.IsNullOrEmpty(BackupPath))
+            throw new Exception($"{Constants.BackupPathAppSettingName} is not set in appsettings.json");
     }
 
     public override async Task<Backup> BackupDatabase(string databaseName, CancellationToken cancellationToken = default)
