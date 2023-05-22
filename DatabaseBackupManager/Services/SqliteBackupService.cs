@@ -16,12 +16,12 @@ public class SqliteBackupService: DatabaseBackup
         if (Server is null)
             return null;
 
-        var path = GetPathForBackup(databaseName, "sqlitebak");
+        var path = GetPathForBackup(Path.GetFileNameWithoutExtension(Server.Host), "sqlitebak");
 
         var process = Process.Start(new ProcessStartInfo
         {
             FileName = "sqlite3",
-            Arguments = $"{databaseName} .dump > {path}",
+            Arguments = $"{Server.Host} \".backup {path}\"",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -50,17 +50,11 @@ public class SqliteBackupService: DatabaseBackup
             return false;
         
         var path = GetPathOrUncompressedPath(backup);
-        
-        var filesParts = Path.GetFileNameWithoutExtension(path)?.Split('_') ?? Array.Empty<string>();
-        var databaseName = string.Join("_", filesParts.SkipLast(1));
-        
-        if (string.IsNullOrEmpty(databaseName))
-            return false;
-        
+
         var process = Process.Start(new ProcessStartInfo
         {
             FileName = "sqlite3",
-            Arguments = $"{databaseName} < {path}",
+            Arguments = $"{Server.Host} \".restore {path}\"",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,

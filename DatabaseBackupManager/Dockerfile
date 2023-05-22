@@ -24,6 +24,7 @@ RUN export ACCEPT_EULA=Y && apt-get update && apt-get install -y \
     postgresql-client \
     default-mysql-client \
     mssql-tools \
+    sqlite3 \
     && rm -rf /var/lib/apt/lists/* 
 
 # create symlink for mssql tools

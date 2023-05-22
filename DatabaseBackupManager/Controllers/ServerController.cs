@@ -5,6 +5,7 @@ using DatabaseBackupManager.Data.Models;
 using DatabaseBackupManager.Models;
 using DatabaseBackupManager.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
 using Npgsql;
@@ -48,8 +49,27 @@ public class ServerController: Controller
     public async Task<IActionResult> Create(Server server)
     {
         if (!ModelState.IsValid)
-            return View(server);
-        
+        {
+            if(server.Type != DatabaseTypes.Sqlite)
+                return View(server);
+            
+            if (string.IsNullOrWhiteSpace(server.Host))
+                return View(server);
+        }
+
+        if (server.Type == DatabaseTypes.Sqlite)
+        {
+            server.User = Constants.DefaultValueForSqliteColumns;
+            server.Port = 1;
+
+            if (!System.IO.File.Exists(server.Host))
+            {
+                ModelState.AddModelError(nameof(Server.Host), "The file does not exist");
+                
+                return View(server);
+            }
+        }
+
         var testConnection = await TestConnection(server);
         
         if (!string.IsNullOrWhiteSpace(testConnection))
@@ -95,7 +115,21 @@ public class ServerController: Controller
             return View(server);
         }
         
-        DbContext.Servers.Update(server);
+        var existingServer = await DbContext.Servers.FirstOrDefaultAsync(s => s.Id == id);
+        
+        if (existingServer is null)
+            return NotFound();
+        
+        existingServer.Name = server.Name;
+        existingServer.Host = server.Host;
+        existingServer.Port = server.Port;
+        existingServer.Type = server.Type;
+        existingServer.User = server.User;
+        
+        if (!string.IsNullOrWhiteSpace(server.Password))
+            existingServer.Password = server.Password;
+
+        DbContext.Servers.Update(existingServer);
         await DbContext.SaveChangesAsync();
         
         return RedirectToAction(nameof(Index));

@@ -24,7 +24,6 @@ public class Server: BaseModel
     [Required]
     public string User { get; set; }
     
-    [Required]
     [DataType(DataType.Password)]
     public string Password { get; set; }
     
@@ -64,7 +63,8 @@ public class Server: BaseModel
         DatabaseTypes.Sqlite => new SqliteConnectionStringBuilder
         {
             DataSource = Host,
-            Mode = SqliteOpenMode.ReadWriteCreate
+            Mode = SqliteOpenMode.ReadWriteCreate,
+            Password = Password
         }.ToString(),
         
         _ => throw new ArgumentOutOfRangeException(nameof(Type), "Database type not supported")
@@ -72,6 +72,11 @@ public class Server: BaseModel
 
     public async Task<string[]> ListDatabases()
     {
+        if (Type == DatabaseTypes.Sqlite)
+        {
+            return new[] { "all tables" };
+        }
+        
         var connection = GetConnection();
         
         await connection.OpenAsync();
@@ -83,7 +88,6 @@ public class Server: BaseModel
             DatabaseTypes.Postgres => "SELECT datname FROM pg_database WHERE datistemplate = false;",
             DatabaseTypes.MySql => "SHOW DATABASES;",
             DatabaseTypes.SqlServer => "SELECT name FROM master.dbo.sysdatabases;",
-            DatabaseTypes.Sqlite => "SELECT name FROM sqlite_master WHERE type='table';",
             _ => throw new ArgumentOutOfRangeException(nameof(Type), "Database type not supported")
         };
         

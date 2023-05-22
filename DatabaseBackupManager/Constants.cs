@@ -11,6 +11,8 @@ public static class Constants
     public const string BackupPathAppSettingName = "BackupPath";
     public const string DayBeforeCompressionName = "dayBeforeCompression";
     public const string CronForCompressionJobName = "cronForCompressionJob";
+
+    public const string DefaultValueForSqliteColumns = "sqlite_default";
     
     public static readonly string[] FileSizeSuffixes = { "B", "KB", "MB", "GB", "TB" };
 

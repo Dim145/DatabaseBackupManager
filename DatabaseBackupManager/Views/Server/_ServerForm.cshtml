@@ -20,6 +20,18 @@
     </div>
 </div>
 
+<div class="row mt-4">
+    <div class="col">
+        <div class="alert alert-info">
+            <p>
+                For SQLite databases, the <strong>Host</strong> field should be the path to the database file. <br/>
+                Password can be set in the <strong>Password</strong> field.<br/>
+                All others fields should set to any values
+            </p>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col">
         <div class="form-group">
@@ -49,7 +61,7 @@
     <div class="col">
         <div class="form-group">
             <label asp-for="Password" class="control-label"></label>
-            <input asp-for="Password" class="form-control" required />
+            <input asp-for="Password" class="form-control" />
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
     </div>
