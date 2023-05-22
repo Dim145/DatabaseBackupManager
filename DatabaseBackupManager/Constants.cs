@@ -41,14 +41,12 @@ public static class Constants
         return $"BackupJob-{jobName}-{backupJobId}";
     }
 
-    public static DatabaseBackup GetService(this DatabaseTypes type, IConfiguration conf)
+    public static DatabaseBackup GetService(this DatabaseTypes type, IConfiguration conf) => type switch
     {
-        return type switch
-        {
-            DatabaseTypes.Postgres => new PostgresBackupService(conf),
-            DatabaseTypes.MySql => new MySqlBackupService(conf),
-            DatabaseTypes.SqlServer => new SqlServerBackupService(conf),
-            _ => throw new Exception($"Server type {type} is not supported")
-        };
-    }
+        DatabaseTypes.Postgres => new PostgresBackupService(conf),
+        DatabaseTypes.MySql => new MySqlBackupService(conf),
+        DatabaseTypes.SqlServer => new SqlServerBackupService(conf),
+        DatabaseTypes.Sqlite => new SqliteBackupService(conf),
+        _ => throw new Exception($"Server type {type} is not supported")
+    };
 }
