@@ -2,12 +2,14 @@ using System.Text.RegularExpressions;
 using DatabaseBackupManager.Data;
 using DatabaseBackupManager.Models;
 using DatabaseBackupManager.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace DatabaseBackupManager.Controllers;
 
 [Route("backups")]
+[Authorize(Policy = "AdminRolePolicy")]
 public class BackupController: Controller
 {
     private ApplicationDbContext DbContext { get; }

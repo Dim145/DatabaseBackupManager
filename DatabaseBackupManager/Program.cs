@@ -1,12 +1,21 @@
+using System.Net;
+using System.Net.Mail;
 using DatabaseBackupManager.Authorizations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DatabaseBackupManager.Data;
+using DatabaseBackupManager.Models;
 using DatabaseBackupManager.Services;
 using Hangfire;
 using Hangfire.Storage.SQLite;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var defaultAdminRole = builder.Configuration["DefaultAdminRole"] ?? Environment.GetEnvironmentVariable("DefaultAdminRole") ?? "Admin";
+var defaultAdminEmail = builder.Configuration["DefaultAdminEmail"] ?? Environment.GetEnvironmentVariable("DefaultAdminEmail") ?? "admin@tochange.com";
+var defaultAdminPassword = builder.Configuration["DefaultAdminPassword"] ?? Environment.GetEnvironmentVariable("DefaultAdminPassword") ?? "Admin183!!";
+var mailSetting = builder.Configuration.GetSection("MailSettings").Get<MailSettings>();
 
 // Add services to the container.
 var dataConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -27,16 +36,38 @@ builder.Services.AddHangfireServer();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
     {
-        options.SignIn.RequireConfirmedAccount = false;
+        options.SignIn.RequireConfirmedAccount = !string.IsNullOrWhiteSpace(mailSetting?.Host);
+        options.SignIn.RequireConfirmedEmail = !string.IsNullOrWhiteSpace(mailSetting?.Host);
     })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminRolePolicy", policy =>
+    {
+        policy.RequireRole(defaultAdminRole);
+    });
+});
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<PostgresBackupService>();
-
 builder.Services.AddScoped<HangfireService>();
+
+if (!string.IsNullOrWhiteSpace(mailSetting?.Host))
+{
+    builder.Services.AddFluentEmail(mailSetting.From ?? mailSetting.User, mailSetting.FromName)
+        .AddRazorRenderer()
+        .AddSmtpSender(new SmtpClient
+        {
+            Host = mailSetting.Host,
+            Port = mailSetting.Port,
+            Credentials = new NetworkCredential(mailSetting.User, mailSetting.Password)
+        });
+
+    builder.Services.AddTransient<IEmailSender, EmailSender>();
+}
 
 var app = builder.Build();
 
@@ -73,10 +104,6 @@ using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 var context = services.GetRequiredService<ApplicationDbContext>();
 context.Database.Migrate();
-
-var defaultAdminRole = builder.Configuration["DefaultAdminRole"] ?? Environment.GetEnvironmentVariable("DefaultAdminRole") ?? "Admin";
-var defaultAdminEmail = builder.Configuration["DefaultAdminEmail"] ?? Environment.GetEnvironmentVariable("DefaultAdminEmail") ?? "admin@tochange.com";
-var defaultAdminPassword = builder.Configuration["DefaultAdminPassword"] ?? Environment.GetEnvironmentVariable("DefaultAdminPassword") ?? "Admin183!!";
 
 // Create roles if not exists
 var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();

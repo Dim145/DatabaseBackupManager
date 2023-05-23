@@ -19,8 +19,10 @@ public class ApplicationDbContext : IdentityDbContext
     private List<Action> AfterSaveChangesCallbacks { get; }
 
     private IEnumerable<AfterSaveChanges> _changes;
+    
+    private static string _passwordKey;
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IConfiguration conf)
         : base(options)
     {
         BeforeSaveChangesCallbacks = new List<Action>
@@ -34,6 +36,24 @@ public class ApplicationDbContext : IdentityDbContext
             SynchronizeBackupJobsWithHangfire,
             SynchronizeBackupWithFiles
         };
+
+        if (string.IsNullOrWhiteSpace(_passwordKey))
+        {
+            _passwordKey = EncryptedStringConverter.GetKey(conf);
+        }
+    }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        builder.Entity<Server>(entity =>
+        {
+            entity
+                .Property(s => s.Password)
+                .HasConversion(p => p.Encrypt(_passwordKey),
+                    p => p.Decrypt(_passwordKey));
+        });
+        
+        base.OnModelCreating(builder);
     }
 
     public override int SaveChanges()

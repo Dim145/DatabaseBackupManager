@@ -4,6 +4,7 @@ using DatabaseBackupManager.Data;
 using DatabaseBackupManager.Data.Models;
 using DatabaseBackupManager.Models;
 using DatabaseBackupManager.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ using Npgsql;
 namespace DatabaseBackupManager.Controllers;
 
 [Route("servers")]
+[Authorize(Policy = "AdminRolePolicy")]
 public class ServerController: Controller
 {
     private ApplicationDbContext DbContext { get; }

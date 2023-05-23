@@ -1,11 +1,13 @@
 using DatabaseBackupManager.Data;
 using DatabaseBackupManager.Data.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace DatabaseBackupManager.Controllers;
 
 [Route("backup-jobs")]
+[Authorize(Policy = "AdminRolePolicy")]
 public class BackupJobController: Controller
 {
     private ApplicationDbContext DbContext { get; }
