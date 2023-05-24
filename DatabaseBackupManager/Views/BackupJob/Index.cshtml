@@ -36,7 +36,7 @@
                     <button type="submit" class="btn btn-secondary">@(backupJob.Enabled ? "Disable" : "Enable")</button>
                 </form>
                 
-                <a asp-controller="Backup" asp-action="Index" asp-route-jobName="@backupJob.Name" class="btn btn-primary">View backups</a>
+                <a asp-controller="Backup" asp-action="Index" asp-route-jobId="@backupJob.Id" class="btn btn-primary">View backups</a>
                 <a asp-controller="BackupJob" asp-action="Edit" asp-route-id="@backupJob.Id" class="btn btn-primary">Edit</a>
                 <a asp-controller="BackupJob" asp-action="Delete" asp-route-id="@backupJob.Id" class="btn btn-danger">Delete</a>
             </td>

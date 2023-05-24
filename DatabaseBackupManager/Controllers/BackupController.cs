@@ -1,9 +1,11 @@
 using System.Text.RegularExpressions;
 using DatabaseBackupManager.Data;
+using DatabaseBackupManager.Data.Models;
 using DatabaseBackupManager.Models;
 using DatabaseBackupManager.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace DatabaseBackupManager.Controllers;
@@ -22,13 +24,19 @@ public class BackupController: Controller
     }
     
     [HttpGet]
-    public IActionResult Index(BackupFilterViewModel filters, int page = 1, int pageSize = 20)
+    public IActionResult Index(BackupFilterViewModel filters, int page = 1, int pageSize = 20, string sort = null, string order = null)
     {
         page = Math.Max(1, page);
+        
+        sort ??= "date";
+        order ??= "desc";
         
         var query = DbContext.Backups
             .Include(b => b.Job)
             .Include(b => b.Job.Server).AsQueryable();
+
+        ViewBag.TotalItems = query.Count();
+        ViewBag.TotalPages = (int) Math.Ceiling((double) ViewBag.TotalItems / pageSize);
 
         // iterate over all properties of the filters object
         foreach (var property in filters.GetType().GetProperties())
@@ -46,11 +54,11 @@ public class BackupController: Controller
 
             switch (property.Name)
             {
-                case "Server":
-                    query = query.Where(b => b.Job.Server.Name.Contains(value.ToString()));
+                case "ServerId":
+                    query = query.Where(b => b.Job.ServerId == (int) value);
                     break;
-                case "JobName":
-                    query = query.Where(b => b.Job.Name.Contains(value.ToString()));
+                case "JobId":
+                    query = query.Where(b => b.JobId == (int) value);
                     break;
                 case "FileName": 
                     query = query.Where(b => b.Path.Contains(value.ToString()));
@@ -64,15 +72,48 @@ public class BackupController: Controller
             }
         }
 
-        query = query.OrderByDescending(b => b.BackupDate);
-        
-        ViewBag.TotalPages = (int) Math.Ceiling((double) query.Count() / pageSize);
+        if (!string.IsNullOrWhiteSpace(sort))
+        {
+            var descending = order == "desc";
+
+            Func<Backup, dynamic> action = sort switch
+            {
+                "serverId" => b => b.Job.Server.Name,
+                "jobId" => b => b.Job.Name,
+                "date" => b => b.BackupDate,
+                "fileName" => b => b.FileName,
+                _ => null
+            };
+
+            if (action == null && sort == "fileSize")
+            {
+                query = query.ToList().AsQueryable();
+                action = b => b.GetFileSize();
+            }
+            
+            if (action != null)
+            {
+                // ReSharper disable twice PossibleUnintendedQueryableAsEnumerable
+                query = (descending ? query.OrderByDescending(action) : query.OrderBy(action)).AsQueryable();
+            }
+        }
 
         var backups = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
         
         ViewBag.Filters = filters;
         ViewBag.Page = page;
         ViewBag.PageSize = pageSize;
+        ViewBag.Sort = sort;
+        ViewBag.Order = order;
+
+        ViewBag.Servers = DbContext.Servers
+            .Select(s => new {s.Name, s.Id})
+            .ToList()
+            .Select(s => new SelectListItem(s.Name, s.Id.ToString()));
+        ViewBag.Jobs = DbContext.BackupJobs
+            .Select(j => new{j.Name, j.Id})
+            .ToList()
+            .Select(j => new SelectListItem(j.Name, j.Id.ToString()));
 
         return View(backups);
     }

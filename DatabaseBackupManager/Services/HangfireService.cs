@@ -105,7 +105,7 @@ public class HangfireService
             RecurseSubdirectories = true,
             MaxRecursionDepth = 3,
             ReturnSpecialDirectories = false,
-            AttributesToSkip = FileAttributes.Directory | FileAttributes.System
+            AttributesToSkip = FileAttributes.System
         });
         
         files = files.Where(f => Constants.AllBackupsFileExtensions.Contains(Path.GetExtension(f)[1..])).ToArray();
@@ -116,6 +116,9 @@ public class HangfireService
         {
             var originalFileName = Path.GetFileNameWithoutExtension(file);
             var fileNameParts = originalFileName.Split('_');
+            
+            if(fileNameParts.Length < 2)
+                continue;
             
             var fileDate = DateTime.ParseExact(fileNameParts.Last(), "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
             

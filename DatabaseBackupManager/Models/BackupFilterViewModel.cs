@@ -7,9 +7,9 @@ namespace DatabaseBackupManager.Models;
 public class BackupFilterViewModel
 {
     [Parameter]
-    public string Server { get; set; }
+    public int ?ServerId { get; set; }
     [Parameter]
-    public string JobName { get; set; }
+    public int? JobId { get; set; }
     [Parameter]
     public string FileName { get; set; }
     [Parameter]
