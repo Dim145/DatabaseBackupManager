@@ -58,6 +58,9 @@ public class BackupJobController: Controller
 
         if (string.IsNullOrWhiteSpace(backupJob.DatabaseNames) || string.IsNullOrWhiteSpace(backupJob.Cron) || string.IsNullOrWhiteSpace(backupJob.Name))
         {
+            if(backupJob.Retention == default)
+                backupJob.Retention = TimeSpan.FromDays(7);
+            
             return View(backupJob);
         }
         
@@ -69,7 +72,7 @@ public class BackupJobController: Controller
         return RedirectToAction(nameof(Index));
     }
     
-    [HttpGet("edit/{id}")]
+    [HttpGet("edit/{id:int}")]
     public async Task<IActionResult> Edit(int id)
     {
         var backupJob = await DbContext.BackupJobs.FirstOrDefaultAsync(b => b.Id == id);
@@ -98,7 +101,7 @@ public class BackupJobController: Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost("change-status/{id}")]
+    [HttpPost("change-status/{id:int}")]
     public IActionResult ChangeStatus(int id)
     {
         var backupJob = DbContext.BackupJobs.FirstOrDefault(b => b.Id == id);
@@ -124,7 +127,7 @@ public class BackupJobController: Controller
         return View(backupJob);
     }
     
-    [HttpPost("delete/{id}")]
+    [HttpPost("delete/{id:int}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeletePost(int id)
     {

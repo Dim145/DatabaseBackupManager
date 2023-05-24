@@ -16,7 +16,7 @@ public class SqliteBackupService: DatabaseBackup
         if (Server is null)
             return null;
 
-        var path = GetPathForBackup(Path.GetFileNameWithoutExtension(Server.Host), "sqlitebak");
+        var path = GetPathForBackup(Path.GetFileNameWithoutExtension(Server.Host), Constants.SqliteBackupFileExtension);
 
         var process = Process.Start(new ProcessStartInfo
         {

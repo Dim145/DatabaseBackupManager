@@ -15,6 +15,13 @@ public static class Constants
     public const string DefaultValueForSqliteColumns = "sqlite_default";
     
     public static readonly string[] FileSizeSuffixes = { "B", "KB", "MB", "GB", "TB" };
+    
+    public const string PostgresBackupFileExtension = "pgbbak";
+    public const string MySqlBackupFileExtension = "sql";
+    public const string SqlServerBackupFileExtension = "bak";
+    public const string SqliteBackupFileExtension = "sqlitebak";
+    
+    public static readonly string[] AllBackupsFileExtensions = { PostgresBackupFileExtension, MySqlBackupFileExtension, SqlServerBackupFileExtension, SqliteBackupFileExtension };
 
     internal static void AddOrUpdateHangfireJob(BackupJob backupJob)
     {

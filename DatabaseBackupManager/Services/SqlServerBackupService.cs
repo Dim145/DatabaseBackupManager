@@ -18,7 +18,7 @@ public class SqlServerBackupService: DatabaseBackup
         if (Server is null)
             return null;
         
-        var path = GetPathForBackup(databaseName, "bak");
+        var path = GetPathForBackup(databaseName, Constants.SqlServerBackupFileExtension);
 
         var cmd = $"sqlcmd -S {Server.Host},{Server.Port} -U {Server.User} -P {Server.Password} -Q \"BACKUP DATABASE [{databaseName}] TO DISK = N'/usr/backup_{databaseName}' WITH NOFORMAT, NOINIT, NAME = '{databaseName}-full', SKIP, NOREWIND, NOUNLOAD, STATS = 10\"";
         

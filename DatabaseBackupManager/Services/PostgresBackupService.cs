@@ -16,7 +16,7 @@ public class PostgresBackupService: DatabaseBackup
         if (Server is null)
             return null;
         
-        var path = GetPathForBackup(databaseName, "pgbbak");
+        var path = GetPathForBackup(databaseName, Constants.PostgresBackupFileExtension);
 
         var cmd = $"pg_dump -U {Server.User} -h {Server.Host} -p {Server.Port} -d {databaseName} -f {path} -F p";
         

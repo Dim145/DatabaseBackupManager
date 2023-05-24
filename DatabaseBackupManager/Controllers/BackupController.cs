@@ -77,7 +77,7 @@ public class BackupController: Controller
         return View(backups);
     }
     
-    [HttpGet("download/{id}")]
+    [HttpGet("download/{id:int}")]
     public async Task<IActionResult> Download(int id)
     {
         var backup = await DbContext.Backups
@@ -93,7 +93,7 @@ public class BackupController: Controller
         return File(file, "application/octet-stream", backup.FileName);
     }
     
-    [HttpGet("delete/{id}")]
+    [HttpGet("delete/{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
         var backup = await DbContext.Backups

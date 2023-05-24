@@ -34,7 +34,7 @@ public class HangfireService
         if (backupJob is null)
             throw new Exception($"BackupJob with id {backupJobId} not found");
 
-        //BackgroundJob.Enqueue(() => CleanBackupRep(backupJobId));
+        BackgroundJob.Enqueue(() => CleanBackupRep(backupJobId));
         
         if(!backupJob.Enabled)
             throw new Exception($"BackupJob '{backupJob.Name}' is not enabled");
@@ -100,11 +100,15 @@ public class HangfireService
         var dayBeforeCompression = TimeSpan.FromDays(Configuration.GetValue<int>(Constants.DayBeforeCompressionName));
         var backupRoot = Configuration.GetValue<string>(Constants.BackupPathAppSettingName);
         
-        var files = Directory.GetFiles(backupRoot, "*.sql", new EnumerationOptions
+        var files = Directory.GetFiles(backupRoot, "*.*", new EnumerationOptions
         {
             RecurseSubdirectories = true,
-            MaxRecursionDepth = 3
+            MaxRecursionDepth = 3,
+            ReturnSpecialDirectories = false,
+            AttributesToSkip = FileAttributes.Directory | FileAttributes.System
         });
+        
+        files = files.Where(f => Constants.AllBackupsFileExtensions.Contains(Path.GetExtension(f)[1..])).ToArray();
 
         var listOdRes = new List<string>();
 
