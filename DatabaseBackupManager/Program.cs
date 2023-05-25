@@ -65,7 +65,7 @@ builder.Services.AddScoped<HangfireService>();
 
 builder.Services.AddHostedService<FileWatcherService>();
 
-if (!string.IsNullOrWhiteSpace(mailSetting?.Host))
+if (mailSetting.IsValid())
 {
     builder.Services.AddFluentEmail(mailSetting.From ?? mailSetting.User, mailSetting.FromName)
         .AddRazorRenderer()
@@ -77,6 +77,10 @@ if (!string.IsNullOrWhiteSpace(mailSetting?.Host))
         });
 
     builder.Services.AddTransient<IEmailSender, EmailSender>();
+}
+else
+{
+    Console.Error.WriteLine("Mail settings are not valid. Email confirmation will not work.");
 }
 
 var app = builder.Build();
