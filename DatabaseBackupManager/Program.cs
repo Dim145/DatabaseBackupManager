@@ -55,6 +55,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<PostgresBackupService>();
 builder.Services.AddScoped<HangfireService>();
 
+builder.Services.AddHostedService<FileWatcherService>();
+
 if (!string.IsNullOrWhiteSpace(mailSetting?.Host))
 {
     builder.Services.AddFluentEmail(mailSetting.From ?? mailSetting.User, mailSetting.FromName)
