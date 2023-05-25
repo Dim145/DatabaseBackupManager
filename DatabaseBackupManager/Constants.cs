@@ -58,4 +58,26 @@ public static class Constants
         DatabaseTypes.Sqlite => new SqliteBackupService(conf),
         _ => throw new Exception($"Server type {type} is not supported")
     };
+
+    public static string ToSizeString(this long size)
+    {
+        try
+        {
+            var bytes = size;
+            var suffixIndex = 0;
+        
+            while (bytes > 1024 && suffixIndex < FileSizeSuffixes.Length - 1)
+            {
+                bytes /= 1024;
+                suffixIndex++;
+            }
+            return $"{bytes} {FileSizeSuffixes[suffixIndex]}";
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine(e);
+
+            return "Unknown";
+        }
+    }
 }

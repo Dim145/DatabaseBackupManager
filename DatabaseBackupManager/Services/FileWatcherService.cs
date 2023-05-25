@@ -26,11 +26,12 @@ public class FileWatcherService: BackgroundService
         };
     }
     
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    // don't use async method because this cause server waiting for the task to complete
+    protected override Task ExecuteAsync(CancellationToken stoppingToken) => Task.Run(async () =>
     {
         Watcher.BeginInit();
-        
-        while(!stoppingToken.IsCancellationRequested && _errorCount < 5)
+
+        while (!stoppingToken.IsCancellationRequested && _errorCount < 5)
         {
             try
             {
@@ -38,7 +39,7 @@ public class FileWatcherService: BackgroundService
 
                 if (fileEvent.TimedOut)
                     continue;
-            
+
                 switch (fileEvent.ChangeType)
                 {
                     case WatcherChangeTypes.Deleted:
@@ -62,7 +63,7 @@ public class FileWatcherService: BackgroundService
                     _resetErrorCountTask.Dispose();
                     _resetErrorCountTask = null;
                 }
-                
+
                 _resetErrorCountTask ??= Task.Run(async () =>
                 {
                     await Task.Delay(30_000, stoppingToken);
@@ -71,9 +72,9 @@ public class FileWatcherService: BackgroundService
                 }, stoppingToken);
             }
         }
-        
+
         Watcher.EndInit();
-    }
+    }, stoppingToken);
     
     private async Task HandleDeletedFile(WaitForChangedResult fileEvent)
     {
