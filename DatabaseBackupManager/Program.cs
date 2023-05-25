@@ -15,7 +15,15 @@ var builder = WebApplication.CreateBuilder(args);
 var defaultAdminRole = builder.Configuration["DefaultAdminRole"] ?? Environment.GetEnvironmentVariable("DefaultAdminRole") ?? "Admin";
 var defaultAdminEmail = builder.Configuration["DefaultAdminEmail"] ?? Environment.GetEnvironmentVariable("DefaultAdminEmail") ?? "admin@tochange.com";
 var defaultAdminPassword = builder.Configuration["DefaultAdminPassword"] ?? Environment.GetEnvironmentVariable("DefaultAdminPassword") ?? "Admin183!!";
-var mailSetting = builder.Configuration.GetSection("MailSettings").Get<MailSettings>();
+var mailSetting = builder.Configuration.GetSection("MailSettings").Get<MailSettings>() ?? new MailSettings
+{
+    From = Environment.GetEnvironmentVariable("MailSettings__From"),
+    Host = Environment.GetEnvironmentVariable("MailSettings__Host"),
+    Port = int.TryParse(Environment.GetEnvironmentVariable("MailSettings__Port"), out var port) ? port : 587,
+    User = Environment.GetEnvironmentVariable("MailSettings__Username"),
+    Password = Environment.GetEnvironmentVariable("MailSettings__Password"),
+    FromName = Environment.GetEnvironmentVariable("MailSettings__FromName"),
+};
 
 // Add services to the container.
 var dataConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
