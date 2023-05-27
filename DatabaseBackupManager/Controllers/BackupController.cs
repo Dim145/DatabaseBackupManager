@@ -64,7 +64,7 @@ public class BackupController: Controller
                     query = query.Where(b => b.Path.Contains(value.ToString()));
                     break;
                 case "FileSize":
-                    query = query.ToList().Where(b => b.GetFileSize().Contains(value.ToString() ?? string.Empty)).AsQueryable();
+                    query = query.ToList().Where(b => b.GetFileSizeString().Contains(value.ToString() ?? string.Empty)).AsQueryable();
                     break;
                 case "Date":
                     query = query.Where(b => b.BackupDate.Date == (value as DateTime?));

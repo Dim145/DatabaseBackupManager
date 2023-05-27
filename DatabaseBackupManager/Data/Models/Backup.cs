@@ -25,5 +25,6 @@ public class Backup: BaseModel
     
     private FileInfo _fileInfo;
 
-    public string GetFileSize() => (_fileInfo ??= new FileInfo(Path)).Length.ToSizeString();
+    public string GetFileSizeString() => GetFileSize().ToSizeString();
+    public long GetFileSize() => (_fileInfo ??= new FileInfo(Path)).Length;
 }

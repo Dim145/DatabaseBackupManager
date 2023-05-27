@@ -97,7 +97,7 @@
             <tr>
                 <td>@backup.FileName</td>
                 <td>@backup.BackupDate.ToString("dd/MM/yyyy HH:mm:ss")</td>
-                <td>@backup.GetFileSize()</td>
+                <td>@backup.GetFileSizeString()</td>
                 <td>@(backup.Job?.Name ?? "no information")</td>
                 <td>@(backup.Job?.Server?.Name ?? "no information")</td>
                 <td colspan="2">
