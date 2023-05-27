@@ -20,12 +20,12 @@ public class SqlServerBackupService: DatabaseBackup
         
         var path = GetPathForBackup(databaseName, Constants.SqlServerBackupFileExtension);
 
-        var cmd = $"sqlcmd -S {Server.Host},{Server.Port} -U {Server.User} -P {Server.Password} -Q \"BACKUP DATABASE [{databaseName}] TO DISK = N'/usr/backup_{databaseName}' WITH NOFORMAT, NOINIT, NAME = '{databaseName}-full', SKIP, NOREWIND, NOUNLOAD, STATS = 10\"";
+        var cmd = $"sqlcmd -S {Server.Host},{Server.Port} -U {Server.User} -P {Server.Password} -Q \"BACKUP DATABASE [{databaseName}] TO DISK = N'/usr/backup_{databaseName}' WITH NOFORMAT, INIT, NAME = '{databaseName}-full', SKIP, NOREWIND, NOUNLOAD, STATS = 10\"";
         
         var process = Process.Start(new ProcessStartInfo
         {
             FileName = "sqlcmd",
-            Arguments = $"-S {Server.Host},{Server.Port} -U {Server.User} -P {Server.Password} -Q \"BACKUP DATABASE [{databaseName}] TO DISK = N'/usr/backup_{databaseName}' WITH NOFORMAT, NOINIT, NAME = '{databaseName}-full', SKIP, NOREWIND, NOUNLOAD, STATS = 10\"",
+            Arguments = $"-S {Server.Host},{Server.Port} -U {Server.User} -P {Server.Password} -Q \"BACKUP DATABASE [{databaseName}] TO DISK = N'/usr/backup_{databaseName}' WITH NOFORMAT, INIT, NAME = '{databaseName}-full', SKIP, NOREWIND, NOUNLOAD, STATS = 10\"",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
