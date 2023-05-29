@@ -83,6 +83,20 @@ else
     Console.Error.WriteLine("Mail settings are not valid. Email confirmation will not work.\nconfig: " + mailSetting);
 }
 
+var googleSection = builder.Configuration.GetSection("Authentication:Google");
+var googleClientId = googleSection["ClientId"] ?? Environment.GetEnvironmentVariable("GoogleClientId");
+var googleClientSecret = googleSection["ClientSecret"] ?? Environment.GetEnvironmentVariable("GoogleClientSecret");
+
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+    builder.Services.AddAuthentication()
+        .AddGoogle(options =>
+        {
+            options.ClientId = googleClientId;
+            options.ClientSecret = googleClientSecret;
+        });
+}
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
