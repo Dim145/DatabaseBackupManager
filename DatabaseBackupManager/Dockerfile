@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:6.0.408 AS build
+﻿FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 COPY ["DatabaseBackupManager/DatabaseBackupManager.csproj", "DatabaseBackupManager/"]
 RUN dotnet restore "DatabaseBackupManager/DatabaseBackupManager.csproj" --runtime linux-x64
@@ -44,8 +44,6 @@ VOLUME /backups
 ENV ASPNETCORE_URLS=http://+:80;https://+:443
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=test1345
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/app/https/DatabaseBackupManager.pfx
-
-RUN mkdir /data
 
 RUN chmod +x DatabaseBackupManager
 
