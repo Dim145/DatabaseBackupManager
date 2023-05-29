@@ -9,6 +9,8 @@ Environment variable to personalize or config the application:
 - MailSettings__FromName
 - MailSettings__Password
 - MailSettings__Port
+- GoogleClientId
+- GoogleClientSecret
 
 For container, volumes to mount:
 - /data
