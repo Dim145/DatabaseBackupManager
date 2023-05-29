@@ -19,10 +19,10 @@ var mailSetting = builder.Configuration.GetSection("MailSettings").Get<MailSetti
 {
     From = Environment.GetEnvironmentVariable("MailSettings__From"),
     Host = Environment.GetEnvironmentVariable("MailSettings__Host"),
-    Port = int.TryParse(Environment.GetEnvironmentVariable("MailSettings__Port"), out var port) ? port : 587,
-    User = Environment.GetEnvironmentVariable("MailSettings__Username"),
+    Username = Environment.GetEnvironmentVariable("MailSettings__UserName"),
     Password = Environment.GetEnvironmentVariable("MailSettings__Password"),
     FromName = Environment.GetEnvironmentVariable("MailSettings__FromName"),
+    Port = int.TryParse(Environment.GetEnvironmentVariable("MailSettings__Port"), out var port) ? port : 587,
 };
 
 // Add services to the container.
@@ -67,20 +67,20 @@ builder.Services.AddHostedService<FileWatcherService>();
 
 if (mailSetting.IsValid())
 {
-    builder.Services.AddFluentEmail(mailSetting.From ?? mailSetting.User, mailSetting.FromName)
+    builder.Services.AddFluentEmail(mailSetting.From ?? mailSetting.Username, mailSetting.FromName)
         .AddRazorRenderer()
         .AddSmtpSender(new SmtpClient
         {
             Host = mailSetting.Host,
             Port = mailSetting.Port,
-            Credentials = new NetworkCredential(mailSetting.User, mailSetting.Password)
+            Credentials = new NetworkCredential(mailSetting.Username, mailSetting.Password)
         });
 
     builder.Services.AddTransient<IEmailSender, EmailSender>();
 }
 else
 {
-    Console.Error.WriteLine("Mail settings are not valid. Email confirmation will not work.");
+    Console.Error.WriteLine("Mail settings are not valid. Email confirmation will not work.\nconfig: " + mailSetting);
 }
 
 var app = builder.Build();

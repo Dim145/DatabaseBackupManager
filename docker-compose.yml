@@ -1,0 +1,26 @@
+﻿version: '3'
+
+services:
+  backup-manager:
+    build:
+      context: .
+      dockerfile: ./DatabaseBackupManager/Dockerfile
+    container_name: backup-manager
+    ports:
+      - "8163:80"
+      - "8165:443"
+    volumes:
+      - /path/to/directory/data:/data
+      - /path/to/directory/backups:/backups
+    environment:
+      - DefaultAdminRole=Admin
+      - DefaultAdminEmail=admin@admin.fr
+      - DefaultAdminPassword=Admin1234!;
+      - HangfireDbPath=/data/hangfire.db
+      - MailSettings__From=
+      - MailSettings__Host=
+      - MailSettings__UserName=
+      - MailSettings__FromName=no-reply
+      - MailSettings__Password=
+      - MailSettings__Port=587
+    restart: unless-stopped

@@ -4,7 +4,7 @@ public class MailSettings
 {
     public string Host { get; set; } = null!;
     public int Port { get; set; }
-    public string User { get; set; } = null!;
+    public string Username { get; set; } = null!;
     public string Password { get; set; } = null!;
     public string From { get; set; } = null!;
     public string FromName { get; set; } = null!;
@@ -12,9 +12,14 @@ public class MailSettings
     public bool IsValid()
     {
         return !string.IsNullOrWhiteSpace(Host) &&
-               !string.IsNullOrWhiteSpace(User) &&
+               !string.IsNullOrWhiteSpace(Username) &&
                !string.IsNullOrWhiteSpace(Password) &&
                !string.IsNullOrWhiteSpace(From) &&
                Port is > 0 and < 65536;
+    }
+    
+    public override string ToString()
+    {
+        return $"Host: {Host}\nPort: {Port}\nUser: {Username}\nPassword: {Password}\nFrom: {From}\nFromName: {FromName}";
     }
 }

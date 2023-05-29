@@ -38,6 +38,9 @@ COPY --from=build /app/publish .
 EXPOSE 80
 EXPOSE 443
 
+VOLUME /data
+VOLUME /backups
+
 ENV ASPNETCORE_URLS=http://+:80;https://+:443
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password=test1345
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/app/https/DatabaseBackupManager.pfx
