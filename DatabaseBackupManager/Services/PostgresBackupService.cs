@@ -18,12 +18,10 @@ public class PostgresBackupService: DatabaseBackup
         
         var path = GetPathForBackup(databaseName, Constants.PostgresBackupFileExtension);
 
-        var cmd = $" pg_dump \"host={Server.Host} port={Server.Port} dbname={databaseName} user={Server.User} password={Server.Password}\" -f {path} -F p";
-        
         var process = Process.Start(new ProcessStartInfo
         {
-            FileName = "bash",
-            Arguments = $"-c \"{cmd}\"",
+            FileName = "pg_dump",
+            Arguments = $"\"host='{Server.Host}' port='{Server.Port}' dbname='{databaseName}' user='{Server.User}' password='{Server.Password}'\" -f {path} -F p",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,

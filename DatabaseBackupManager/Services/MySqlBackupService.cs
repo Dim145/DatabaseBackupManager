@@ -17,13 +17,11 @@ public class MySqlBackupService: DatabaseBackup
             return null;
 
         var path = GetPathForBackup(databaseName, Constants.MySqlBackupFileExtension);
-        
-        var cmd = $"mysqldump -u {Server.User} -p{Server.Password} -h {Server.Host} -P {Server.Port} \"{databaseName}\" --add-locks --lock-tables --result-file=\"{path}\"";
-        
+
         var process = Process.Start(new ProcessStartInfo
         {
-            FileName = "bash",
-            Arguments = $"-c \"{cmd}\"",
+            FileName = "mysqldump",
+            Arguments = $"-u {Server.User} -p{Server.Password} -h {Server.Host} -P {Server.Port} \"{databaseName}\" --add-locks --lock-tables --result-file=\"{path}\"",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
