@@ -107,7 +107,6 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHttpsRedirection();
 }
 
 app.UseStaticFiles();
