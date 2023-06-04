@@ -18,10 +18,14 @@ RUN apt-get update && apt-get install -y curl gnupg2
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
         curl https://packages.microsoft.com/config/debian/10/prod.list | tee /etc/apt/sources.list.d/msprod.list
 
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt buster-pgdg main" >> /etc/apt/sources.list.d/pgdg.list && \
+    curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+
 RUN export ACCEPT_EULA=Y && apt-get update && apt-get install -y \
     libgdiplus \
     openssl \
     postgresql-client \
+    postgresql-client-14 \
     default-mysql-client \
     mssql-tools \
     sqlite3 \
