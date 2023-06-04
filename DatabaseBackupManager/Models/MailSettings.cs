@@ -8,6 +8,7 @@ public class MailSettings
     public string Password { get; set; } = null!;
     public string From { get; set; } = null!;
     public string FromName { get; set; } = null!;
+    public bool UseSsl { get; set; }
     
     public bool IsValid()
     {

@@ -23,6 +23,7 @@ var mailSetting = builder.Configuration.GetSection("MailSettings").Get<MailSetti
     Password = Environment.GetEnvironmentVariable("MailSettings__Password"),
     FromName = Environment.GetEnvironmentVariable("MailSettings__FromName"),
     Port = int.TryParse(Environment.GetEnvironmentVariable("MailSettings__Port"), out var port) ? port : 587,
+    UseSsl = bool.TryParse(Environment.GetEnvironmentVariable("MailSettings__UseSsl"), out var useSsl) && useSsl,
 };
 
 // Add services to the container.
@@ -73,7 +74,8 @@ if (mailSetting.IsValid())
         {
             Host = mailSetting.Host,
             Port = mailSetting.Port,
-            Credentials = new NetworkCredential(mailSetting.Username, mailSetting.Password)
+            Credentials = new NetworkCredential(mailSetting.Username, mailSetting.Password),
+            EnableSsl = mailSetting.UseSsl
         });
 
     builder.Services.AddTransient<IEmailSender, EmailSender>();
