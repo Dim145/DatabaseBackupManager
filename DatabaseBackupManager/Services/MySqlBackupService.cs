@@ -34,7 +34,7 @@ public class MySqlBackupService: DatabaseBackup
 
         if (process.ExitCode != 0)
         {
-            var error = await process.StandardError.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync(cancellationToken);
             
             throw new Exception($"mysqldump failed with exit code {process.ExitCode}: {error}");
         }

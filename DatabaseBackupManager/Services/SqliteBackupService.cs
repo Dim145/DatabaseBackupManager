@@ -32,7 +32,7 @@ public class SqliteBackupService: DatabaseBackup
         
         if (process.ExitCode != 0)
         {
-            var error = await process.StandardError.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync(cancellationToken);
             
             throw new Exception($"sqlite3 backup failed with exit code {process.ExitCode}: {error}");
         }
@@ -65,7 +65,7 @@ public class SqliteBackupService: DatabaseBackup
         
         if (process.ExitCode != 0)
         {
-            var error = await process.StandardError.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync(cancellationToken);
             
             throw new Exception($"sqlite3 restore failed with exit code {process.ExitCode}: {error}");
         }

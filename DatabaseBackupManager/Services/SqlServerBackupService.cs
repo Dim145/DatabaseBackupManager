@@ -36,12 +36,12 @@ public class SqlServerBackupService: DatabaseBackup
         
         if (process.ExitCode != 0)
         {
-            var error = await process.StandardError.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync(cancellationToken);
             
             throw new Exception($"sqlcmd failed with exit code {process.ExitCode}: {error}");
         }
         
-        Console.WriteLine($"CMD |{cmd}| RES IS {await process.StandardOutput.ReadToEndAsync()}");
+        Console.WriteLine($"CMD |{cmd}| RES IS {await process.StandardOutput.ReadToEndAsync(cancellationToken)}");
         
         var dbConnection = Server.GetConnection();
 

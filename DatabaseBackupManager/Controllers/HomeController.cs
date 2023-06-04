@@ -17,7 +17,19 @@ public class HomeController : Controller
     {
         ViewBag.Drives = DriveInfo.GetDrives()
             .Where(d => Directory.Exists(d.VolumeLabel) || Directory.Exists(d.Name))
-            .Where(d => d.TotalSize > 0)
+            .Where(d =>
+            {
+                try
+                {
+                    return d.TotalSize > 0;
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine(e);
+
+                    return false;
+                }
+            })
             .Where(d => d.DriveType is DriveType.Fixed or DriveType.Removable)
             .Where(d => d.IsReady)
             .ToArray();

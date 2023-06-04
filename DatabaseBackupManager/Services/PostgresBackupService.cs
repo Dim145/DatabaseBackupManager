@@ -18,7 +18,7 @@ public class PostgresBackupService: DatabaseBackup
         
         var path = GetPathForBackup(databaseName, Constants.PostgresBackupFileExtension);
 
-        var cmd = $"pg_dump -U {Server.User} -h {Server.Host} -p {Server.Port} -d {databaseName} -f {path} -F p";
+        var cmd = $" pg_dump \"host={Server.Host} port={Server.Port} dbname={databaseName} user={Server.User} password={Server.Password}\" -f {path} -F p";
         
         var process = Process.Start(new ProcessStartInfo
         {
@@ -27,12 +27,9 @@ public class PostgresBackupService: DatabaseBackup
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
         });
 
-        process.WaitForInputIdle();
-        await process.StandardInput.WriteLineAsync(Server.Password);
-        
         await process.WaitForExitAsync(token);
         
         if (process.ExitCode != 0)
