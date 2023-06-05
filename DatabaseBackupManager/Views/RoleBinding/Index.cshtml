@@ -1,0 +1,71 @@
+@using Microsoft.AspNetCore.Identity
+@{
+    ViewBag.Title = "Role Binding";
+    
+    var roles = ViewBag.Roles as List<IdentityRole> ?? new List<IdentityRole>();
+    var users = ViewBag.Users as List<IdentityUser> ?? new List<IdentityUser>();
+    var roleBindings = ViewBag.IdentityRoles as List<IdentityUserRole<string>> ?? new List<IdentityUserRole<string>>();
+}
+
+<h2>Role Binding</h2>
+
+<div class="row">
+    @foreach (var role in roles)
+    {
+        var bindings = roleBindings.Where(r => r.RoleId == role.Id).ToArray();
+        
+        <div class="col-sm-12 col-lg-4 col-md-6">
+            <div class="card" style="width: 100%; min-width: 20rem;">
+                <div class="card-body">
+                    <h5 class="card-title">@role.Name</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">(@role.Id)</h6>
+                    <div class="card-text">
+                        <p>Users</p>
+                        
+                        <table class="table table-bordered table-striped table-hover">
+                            <tr>
+                                <th>Username</th>
+                                <th>Action</th>
+                            </tr>
+                            
+                            @foreach (var user in users.Where(u => bindings.Any(r => r.UserId == u.Id)))
+                            {
+                                <tr>
+                                    <td>@user.UserName</td>
+                                    <td>
+                                        <a 
+                                            class="btn btn-danger" 
+                                            asp-controller="RoleBinding" 
+                                            asp-action="Delete" 
+                                            asp-route-roleId="@role.Id" 
+                                            asp-route-userId="@user.Id"
+                                            onclick="return confirm('Are you sure you want to delete this role binding?')"
+                                            >
+                                            Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                    
+                    <form method="post">
+                        <label for="addTo-@role.Name"></label>
+                        <select id="addTo-@role.Name" name="userId" class="form-select">
+                            <option></option>
+                                                
+                            @foreach(var user in users.Where(u => bindings.All(r => r.UserId != u.Id)))
+                            {
+                                <option value="@user.Id">@user.UserName</option>
+                            }
+                        </select>
+
+                        <button class="btn btn-success mt-2" name="roleId" value="@role.Id">
+                            Add
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>

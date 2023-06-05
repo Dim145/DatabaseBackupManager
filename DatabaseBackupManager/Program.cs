@@ -4,6 +4,7 @@ using DatabaseBackupManager.Authorizations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DatabaseBackupManager.Data;
+using DatabaseBackupManager.Middleware;
 using DatabaseBackupManager.Models;
 using DatabaseBackupManager.Services;
 using Hangfire;
@@ -63,6 +64,7 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<PostgresBackupService>();
 builder.Services.AddScoped<HangfireService>();
+builder.Services.AddScoped<LogoutMiddleware>();
 
 builder.Services.AddHostedService<FileWatcherService>();
 
@@ -127,6 +129,8 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+
+app.UseMiddleware<LogoutMiddleware>();
 
 // Run migrations
 using var scope = app.Services.CreateScope();
