@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DatabaseBackupManager.Controllers;
 
-[Authorize(Policy = "AdminRolePolicy")]
+[Authorize(Policy = nameof(Policies.AdminRolePolicy))]
 [Route("rolebinding")]
 public class RoleBindingController: Controller
 {

@@ -2,6 +2,7 @@ using System.Data;
 using System.Data.Common;
 using DatabaseBackupManager.Data;
 using DatabaseBackupManager.Data.Models;
+using DatabaseBackupManager.Middleware;
 using DatabaseBackupManager.Models;
 using DatabaseBackupManager.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -14,7 +15,7 @@ using Npgsql;
 namespace DatabaseBackupManager.Controllers;
 
 [Route("servers")]
-[Authorize(Policy = "AdminRolePolicy")]
+[Authorize(Policy = nameof(Policies.AdminRolePolicy))]
 public class ServerController: Controller
 {
     private ApplicationDbContext DbContext { get; }

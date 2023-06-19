@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using DatabaseBackupManager.Data;
 using DatabaseBackupManager.Data.Models;
+using DatabaseBackupManager.Middleware;
 using DatabaseBackupManager.Models;
 using DatabaseBackupManager.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace DatabaseBackupManager.Controllers;
 
 [Route("backups")]
-[Authorize(Policy = "AdminRolePolicy")]
+[Authorize(Policy = nameof(Policies.AdminRolePolicy))]
 public class BackupController: Controller
 {
     private ApplicationDbContext DbContext { get; }

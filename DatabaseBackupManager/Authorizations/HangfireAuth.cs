@@ -1,3 +1,4 @@
+using DatabaseBackupManager.Data;
 using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Identity;
 
@@ -19,6 +20,6 @@ public class HangfireAuth: IDashboardAuthorizationFilter
         var user = userManager!.GetUserAsync(httpContext.User).GetAwaiter().GetResult();
         var roles = userManager!.GetRolesAsync(user).GetAwaiter().GetResult();
 
-        return roles.Contains("Admin");
+        return roles.Contains(Seeds.DataSettings.DefaultAdminRole);
     }
 }

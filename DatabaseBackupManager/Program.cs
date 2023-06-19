@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Mail;
+using System.Reflection;
 using DatabaseBackupManager.Authorizations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -13,19 +14,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var defaultAdminRole = builder.Configuration["DefaultAdminRole"] ?? Environment.GetEnvironmentVariable("DefaultAdminRole") ?? "Admin";
-var defaultAdminEmail = builder.Configuration["DefaultAdminEmail"] ?? Environment.GetEnvironmentVariable("DefaultAdminEmail") ?? "admin@tochange.com";
-var defaultAdminPassword = builder.Configuration["DefaultAdminPassword"] ?? Environment.GetEnvironmentVariable("DefaultAdminPassword") ?? "Admin183!!";
-var mailSetting = builder.Configuration.GetSection("MailSettings").Get<MailSettings>() ?? new MailSettings
-{
-    From = Environment.GetEnvironmentVariable("MailSettings__From"),
-    Host = Environment.GetEnvironmentVariable("MailSettings__Host"),
-    Username = Environment.GetEnvironmentVariable("MailSettings__UserName"),
-    Password = Environment.GetEnvironmentVariable("MailSettings__Password"),
-    FromName = Environment.GetEnvironmentVariable("MailSettings__FromName"),
-    Port = int.TryParse(Environment.GetEnvironmentVariable("MailSettings__Port"), out var port) ? port : 587,
-    UseSsl = bool.TryParse(Environment.GetEnvironmentVariable("MailSettings__UseSsl"), out var useSsl) && useSsl,
-};
+builder.Configuration.InitSettingsVars();
 
 // Add services to the container.
 var dataConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -46,18 +35,18 @@ builder.Services.AddHangfireServer();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
     {
-        options.SignIn.RequireConfirmedAccount = !string.IsNullOrWhiteSpace(mailSetting?.Host);
-        options.SignIn.RequireConfirmedEmail = !string.IsNullOrWhiteSpace(mailSetting?.Host);
+        options.SignIn.RequireConfirmedAccount = !string.IsNullOrWhiteSpace(Seeds.MailSettings.Host);
+        options.SignIn.RequireConfirmedEmail = !string.IsNullOrWhiteSpace(Seeds.MailSettings.Host);
     })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminRolePolicy", policy =>
+    foreach (var methodInfo in typeof(Policies).GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Where(m => m.Name.EndsWith("Policy")))
     {
-        policy.RequireRole(defaultAdminRole);
-    });
+        options.AddPolicy(methodInfo.Name, policy => methodInfo.Invoke(null, new object[] {policy}));
+    }
 });
 
 builder.Services.AddControllersWithViews();
@@ -68,23 +57,23 @@ builder.Services.AddScoped<LogoutMiddleware>();
 
 builder.Services.AddHostedService<FileWatcherService>();
 
-if (mailSetting.IsValid())
+if (Seeds.MailSettings.IsValid())
 {
-    builder.Services.AddFluentEmail(mailSetting.From ?? mailSetting.Username, mailSetting.FromName)
+    builder.Services.AddFluentEmail(Seeds.MailSettings.From ?? Seeds.MailSettings.Username, Seeds.MailSettings.FromName)
         .AddRazorRenderer()
         .AddSmtpSender(new SmtpClient
         {
-            Host = mailSetting.Host,
-            Port = mailSetting.Port,
-            Credentials = new NetworkCredential(mailSetting.Username, mailSetting.Password),
-            EnableSsl = mailSetting.UseSsl
+            Host = Seeds.MailSettings.Host,
+            Port = Seeds.MailSettings.Port,
+            Credentials = new NetworkCredential(Seeds.MailSettings.Username, Seeds.MailSettings.Password),
+            EnableSsl = Seeds.MailSettings.UseSsl
         });
 
     builder.Services.AddTransient<IEmailSender, EmailSender>();
 }
 else
 {
-    Console.Error.WriteLine("Mail settings are not valid. Email confirmation will not work.\nconfig: " + mailSetting);
+    Console.Error.WriteLine("Mail settings are not valid. Email confirmation will not work.\nconfig: " + Seeds.MailSettings);
 }
 
 var googleSection = builder.Configuration.GetSection("Authentication:Google");
@@ -138,31 +127,7 @@ var services = scope.ServiceProvider;
 var context = services.GetRequiredService<ApplicationDbContext>();
 context.Database.Migrate();
 
-// Create roles if not exists
-var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-var adminRole = await roleManager.FindByNameAsync(defaultAdminRole);
-
-if (adminRole == null)
-    await roleManager.CreateAsync(new IdentityRole(defaultAdminRole));
-
-// Create admin user if not exists
-var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-var admin = await userManager.FindByNameAsync(defaultAdminEmail);
-
-if (admin == null)
-{
-    admin = new IdentityUser(defaultAdminEmail)
-    {
-        Email = defaultAdminEmail,
-        EmailConfirmed = true
-    };
-
-    await userManager.CreateAsync(admin, defaultAdminPassword);
-}
-
-if (!await userManager.IsInRoleAsync(admin, defaultAdminRole))
-    await userManager.AddToRoleAsync(admin, defaultAdminRole);
-
+await services.SeedDatabase();
 await HangfireService.InitHangfireRecurringJob(context, builder.Configuration);
 
 app.Run();

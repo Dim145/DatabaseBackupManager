@@ -1,4 +1,5 @@
-﻿@{
+﻿@using DatabaseBackupManager.Data
+@{
     ViewData["Title"] = "Home Page";
 }
 
@@ -17,7 +18,7 @@
     </div>
 </div>
 
-@if ((User.Identity?.IsAuthenticated ?? false) && User.IsInRole("Admin"))
+@if ((User.Identity?.IsAuthenticated ?? false) && User.IsInRole(Seeds.DataSettings.DefaultAdminRole))
 {
     <div class="row">
         <div class="col">
