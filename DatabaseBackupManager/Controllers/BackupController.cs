@@ -1,9 +1,7 @@
-using System.Text.RegularExpressions;
 using DatabaseBackupManager.Data;
 using DatabaseBackupManager.Data.Models;
 using DatabaseBackupManager.Middleware;
 using DatabaseBackupManager.Models;
-using DatabaseBackupManager.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -12,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace DatabaseBackupManager.Controllers;
 
 [Route("backups")]
-[Authorize(Policy = nameof(Policies.AdminRolePolicy))]
+[Authorize(Policy = nameof(Policies.ReaderRolePolicy))]
 public class BackupController: Controller
 {
     private ApplicationDbContext DbContext { get; }
@@ -136,6 +134,7 @@ public class BackupController: Controller
     }
     
     [HttpGet("delete/{id:int}")]
+    [Authorize(Policy = nameof(Policies.EditorRolePolicy))]
     public async Task<IActionResult> Delete(int id)
     {
         var backup = await DbContext.Backups
@@ -155,6 +154,7 @@ public class BackupController: Controller
     }
 
     [HttpGet("restore/{id:int}")]
+    [Authorize(Policy = nameof(Policies.RestorerRolePolicy))]
     public async Task<IActionResult> Restore(int id)
     {
         var backup = await DbContext.Backups
@@ -175,6 +175,7 @@ public class BackupController: Controller
     }
     
     [HttpPost("restore/{id:int}")]
+    [Authorize(Policy = nameof(Policies.RestorerRolePolicy))]
     public async Task<IActionResult> RestorePost(int id)
     {
         var backup = await DbContext.Backups

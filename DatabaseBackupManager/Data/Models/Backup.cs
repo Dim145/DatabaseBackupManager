@@ -25,6 +25,28 @@ public class Backup: BaseModel
     
     private FileInfo _fileInfo;
 
-    public string GetFileSizeString() => GetFileSize().ToSizeString();
+    public string GetFileSizeString()
+    {
+        try
+        {
+            return GetFileSize().ToSizeString();
+        }
+        catch (FileNotFoundException)
+        {
+            return "File not found";
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine(e);
+            
+            return "Unknown";
+        }
+    }
+    
+    /// <summary>
+    ///     Returns the size of the file in bytes
+    /// </summary>
+    /// <exception cref="FileNotFoundException"></exception>
+    /// <returns></returns>
     public long GetFileSize() => (_fileInfo ??= new FileInfo(Path)).Length;
 }

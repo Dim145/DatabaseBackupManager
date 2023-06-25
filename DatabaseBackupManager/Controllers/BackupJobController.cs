@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace DatabaseBackupManager.Controllers;
 
 [Route("backup-jobs")]
-[Authorize(Policy = nameof(Policies.AdminRolePolicy))]
+[Authorize(Policy = nameof(Policies.ReaderRolePolicy))]
 public class BackupJobController: Controller
 {
     private ApplicationDbContext DbContext { get; }
@@ -44,6 +44,7 @@ public class BackupJobController: Controller
     
     [HttpPost("new")]
     [ValidateAntiForgeryToken]
+    [Authorize(Policy = nameof(Policies.EditorRolePolicy))]
     public async Task<IActionResult> Create(BackupJob backupJob)
     {
         ViewBag.Servers = DbContext.Servers.ToList();
@@ -74,6 +75,7 @@ public class BackupJobController: Controller
     }
     
     [HttpGet("edit/{id:int}")]
+    [Authorize(Policy = nameof(Policies.EditorRolePolicy))]
     public async Task<IActionResult> Edit(int id)
     {
         var backupJob = await DbContext.BackupJobs.FirstOrDefaultAsync(b => b.Id == id);
@@ -86,6 +88,7 @@ public class BackupJobController: Controller
     
     [HttpPost("edit/{id}")]
     [ValidateAntiForgeryToken]
+    [Authorize(Policy = nameof(Policies.EditorRolePolicy))]
     public async Task<IActionResult> Edit(int id, BackupJob backupJob)
     {
         var existingBackupJob = await DbContext.BackupJobs.FirstOrDefaultAsync(b => b.Id == id);
@@ -103,6 +106,7 @@ public class BackupJobController: Controller
     }
 
     [HttpPost("change-status/{id:int}")]
+    [Authorize(Policy = nameof(Policies.EditorRolePolicy))]
     public IActionResult ChangeStatus(int id)
     {
         var backupJob = DbContext.BackupJobs.FirstOrDefault(b => b.Id == id);
@@ -118,6 +122,7 @@ public class BackupJobController: Controller
     }
     
     [HttpGet("delete/{id}")]
+    [Authorize(Policy = nameof(Policies.EditorRolePolicy))]
     public async Task<IActionResult> Delete(int id)
     {
         var backupJob = await DbContext.BackupJobs.FirstOrDefaultAsync(b => b.Id == id);
@@ -130,6 +135,7 @@ public class BackupJobController: Controller
     
     [HttpPost("delete/{id:int}")]
     [ValidateAntiForgeryToken]
+    [Authorize(Policy = nameof(Policies.EditorRolePolicy))]
     public async Task<IActionResult> DeletePost(int id)
     {
         var existingBackupJob = await DbContext.BackupJobs.FirstOrDefaultAsync(b => b.Id == id);

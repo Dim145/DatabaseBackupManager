@@ -1,5 +1,4 @@
 using DatabaseBackupManager.Models;
-using FluentEmail.Core;
 using Microsoft.AspNetCore.Identity;
 
 namespace DatabaseBackupManager.Data;

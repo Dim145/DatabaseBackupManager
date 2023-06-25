@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Mvc;
 
 namespace DatabaseBackupManager.Middleware;
 
@@ -27,10 +26,18 @@ public class LogoutMiddleware: IMiddleware
             if (path != "/Identity/Account/Logout")
             {
                 var authSchemes = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
-
+                
+                // get all signout schemes and loop them to signout
                 foreach (var scheme in await authSchemes.GetRequestHandlerSchemesAsync())
                 {
-                    await context.SignOutAsync(scheme.Name);
+                    try
+                    {
+                        await context.SignOutAsync(scheme.Name);
+                    }
+                    catch (Exception)
+                    {
+                        // ignored
+                    }
                 }
                 
                 context.Response.Redirect("/");

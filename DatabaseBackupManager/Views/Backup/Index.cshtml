@@ -1,3 +1,6 @@
+@using DatabaseBackupManager.Data
+@using DatabaseBackupManager.Middleware
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model List<DatabaseBackupManager.Data.Models.Backup>
 
 
@@ -102,9 +105,16 @@
                 <td>@(backup.Job?.Server?.Name ?? "no information")</td>
                 <td colspan="2">
                     <a class="btn btn-primary" asp-action="Download" asp-route-id="@backup.Id">download</a>
-                    <a class="btn btn-secondary" asp-action="Restore" asp-route-id="@backup.Id">restore</a>
+                    
+                    @if(User.IsInProjectRole(Seeds.DataSettings.DefaultRestorerRole))
+                    {
+                        <a class="btn btn-secondary" asp-action="Restore" asp-route-id="@backup.Id">restore</a>
+                    }
 
-                    <button class="btn btn-danger" onclick="return confirm('this also delete file, are you sure ?')" asp-action="Delete" asp-route-id="@backup.Id">delete</button>
+                    @if(User.IsInProjectRole(Seeds.DataSettings.DefaultEditorRole))
+                    {
+                        <a class="btn btn-danger" asp-action="Delete" asp-route-id="@backup.Id">delete</a>
+                    }
                 </td>
             </tr>
         }

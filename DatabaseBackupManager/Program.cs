@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DatabaseBackupManager.Data;
 using DatabaseBackupManager.Middleware;
-using DatabaseBackupManager.Models;
 using DatabaseBackupManager.Services;
 using Hangfire;
 using Hangfire.Storage.SQLite;

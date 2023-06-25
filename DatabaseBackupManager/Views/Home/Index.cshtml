@@ -18,7 +18,7 @@
     </div>
 </div>
 
-@if ((User.Identity?.IsAuthenticated ?? false) && User.IsInRole(Seeds.DataSettings.DefaultAdminRole))
+@if ((User.Identity?.IsAuthenticated ?? false) && User.IsInProjectRole(Seeds.DataSettings.DefaultEditorRole))
 {
     <div class="row">
         <div class="col">

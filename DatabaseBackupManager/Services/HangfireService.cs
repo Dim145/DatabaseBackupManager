@@ -2,13 +2,9 @@ using System.Globalization;
 using System.IO.Compression;
 using DatabaseBackupManager.Data;
 using DatabaseBackupManager.Data.Models;
-using DatabaseBackupManager.Models;
 using Hangfire;
-using Hangfire.Common;
-using Hangfire.Storage.SQLite.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Npgsql;
 
 namespace DatabaseBackupManager.Services;
 

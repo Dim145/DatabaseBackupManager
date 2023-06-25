@@ -23,12 +23,9 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                     </li>
-                    @if(User.IsInRole(Seeds.DataSettings.DefaultAdminRole))
+
+                    @if(User.IsInProjectRole(Seeds.DataSettings.DefaultReaderRole))
                     {
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Server" asp-action="Index">Servers</a>
-                        </li>
-                        
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="BackupJob" asp-action="Index">Backup Jobs</a>
                         </li>
@@ -36,13 +33,20 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Backup" asp-action="Index">Backups</a>
                         </li>
-                        
+                    }
+                    
+                    @if(User.IsInProjectRole(Seeds.DataSettings.DefaultAdminRole))
+                    {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="/hangfire">Hangfire</a>
+                            <a class="nav-link text-dark" asp-controller="Server" asp-action="Index">Servers</a>
                         </li>
                         
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="RoleBinding" asp-action="Index">Role bindings</a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="/hangfire">Hangfire</a>
                         </li>
                     }
                 </ul>

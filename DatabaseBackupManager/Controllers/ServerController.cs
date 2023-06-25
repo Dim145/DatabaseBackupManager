@@ -1,16 +1,11 @@
 using System.Data;
-using System.Data.Common;
 using DatabaseBackupManager.Data;
 using DatabaseBackupManager.Data.Models;
 using DatabaseBackupManager.Middleware;
 using DatabaseBackupManager.Models;
-using DatabaseBackupManager.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
-using Npgsql;
 
 namespace DatabaseBackupManager.Controllers;
 
