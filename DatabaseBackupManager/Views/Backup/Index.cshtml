@@ -134,7 +134,7 @@
                         <div class="col-4 text-center">
                             @if (Model.Count != pageSize)
                             {
-                                <span>@(Model.Count / @pageSize)</span>
+                                <span>@(Model.Count / pageSize)</span>
                             }
                             page @(page) of @(totalPageCount)
                         </div>

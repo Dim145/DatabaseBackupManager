@@ -13,6 +13,7 @@ public class ApplicationDbContext : IdentityDbContext
     public virtual DbSet<Server> Servers { get; set; }
     public virtual DbSet<BackupJob> BackupJobs { get; set; }
     public virtual DbSet<Backup> Backups { get; set; }
+    public virtual DbSet<Agent> Agents { get; set; }
     
     private List<Action> BeforeSaveChangesCallbacks { get; }
     private List<Action> AfterSaveChangesCallbacks { get; }
@@ -88,11 +89,11 @@ public class ApplicationDbContext : IdentityDbContext
         return res;
     }
 
-    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
     {
         CallBeforeSaveChangesCallbacks();
         
-        var res = base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        var res = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         
         CallAfterSaveChangesCallbacks();
         
