@@ -14,8 +14,8 @@ public class AgentApiController: ControllerBase
         DbContext = dbContext;
     }
     
-    [HttpGet("notify-presence")]
-    public IActionResult NotifyPresence(string token)
+    [HttpPost("notify-presence")]
+    public IActionResult NotifyPresence([FromBody]  string token)
     {
         var agent = DbContext.Agents.FirstOrDefault(a => a.Token == token);
         

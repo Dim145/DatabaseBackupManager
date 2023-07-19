@@ -1,4 +1,4 @@
-using DatabaseBackupManager.Data.Models;
+using Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 

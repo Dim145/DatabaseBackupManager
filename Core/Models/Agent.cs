@@ -1,8 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using DatabaseBackupManager.Models;
 
-namespace DatabaseBackupManager.Data.Models;
+namespace Core.Models;
 
 public class Agent: BaseModel
 {

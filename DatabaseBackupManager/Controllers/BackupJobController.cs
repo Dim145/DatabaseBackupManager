@@ -1,5 +1,5 @@
+using Core.Models;
 using DatabaseBackupManager.Data;
-using DatabaseBackupManager.Data.Models;
 using DatabaseBackupManager.Middleware;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

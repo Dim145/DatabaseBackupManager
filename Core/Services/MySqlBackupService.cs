@@ -1,11 +1,12 @@
 using System.Diagnostics;
-using DatabaseBackupManager.Data.Models;
+using Core.Models;
+using Microsoft.Extensions.Configuration;
 
-namespace DatabaseBackupManager.Services;
+namespace Core.Services;
 
-public class SqliteBackupService: DatabaseBackup
+public class MySqlBackupService: DatabaseBackup
 {
-    public SqliteBackupService(IConfiguration conf, Server server = null) : base(conf.GetValue<string>(Constants.BackupPathAppSettingName), server)
+    public MySqlBackupService(IConfiguration conf, Server server = null) : base(conf.GetValue<string>(Constants.BackupPathAppSettingName), server)
     {
         if (string.IsNullOrEmpty(BackupPath))
             throw new Exception($"{Constants.BackupPathAppSettingName} is not set in appsettings.json");
@@ -13,15 +14,15 @@ public class SqliteBackupService: DatabaseBackup
 
     public override async Task<Backup> BackupDatabase(string databaseName, CancellationToken cancellationToken = default)
     {
-        if (Server is null)
+        if(Server is null)
             return null;
 
-        var path = GetPathForBackup(Path.GetFileNameWithoutExtension(Server.Host), Constants.SqliteBackupFileExtension);
+        var path = GetPathForBackup(databaseName, Constants.MySqlBackupFileExtension);
 
         var process = Process.Start(new ProcessStartInfo
         {
-            FileName = "sqlite3",
-            Arguments = $"{Server.Host} \".backup {path}\"",
+            FileName = "mysqldump",
+            Arguments = $"-u {Server.User} -p{Server.Password} -h {Server.Host} -P {Server.Port} \"{databaseName}\" --add-locks --lock-tables --result-file=\"{path}\"",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -29,14 +30,14 @@ public class SqliteBackupService: DatabaseBackup
         });
         
         await process.WaitForExitAsync(cancellationToken);
-        
+
         if (process.ExitCode != 0)
         {
             var error = await process.StandardError.ReadToEndAsync(cancellationToken);
             
-            throw new Exception($"sqlite3 backup failed with exit code {process.ExitCode}: {error}");
+            throw new Exception($"mysqldump failed with exit code {process.ExitCode}: {error}");
         }
-        
+
         return new Backup
         {
             BackupDate = DateTime.Now,
@@ -48,13 +49,21 @@ public class SqliteBackupService: DatabaseBackup
     {
         if (Server is null)
             return false;
-        
+
         var path = GetPathOrUncompressedPath(backup);
 
+        var filesParts = Path.GetFileNameWithoutExtension(path)?.Split('_') ?? Array.Empty<string>();
+        var databaseName = string.Join("_", filesParts.SkipLast(1));
+        
+        if (string.IsNullOrEmpty(databaseName))
+            return false;
+        
+        var cmd = $"mysql -u {Server.User} -p{Server.Password} -h {Server.Host} -P {Server.Port} \"{databaseName}\" < \"{path}\"";
+        
         var process = Process.Start(new ProcessStartInfo
         {
-            FileName = "sqlite3",
-            Arguments = $"{Server.Host} \".restore {path}\"",
+            FileName = "bash",
+            Arguments = $"-c \"{cmd}\"",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -63,12 +72,11 @@ public class SqliteBackupService: DatabaseBackup
         
         await process.WaitForExitAsync(cancellationToken);
         
+        if(backup.Compressed && File.Exists(path))
+            File.Delete(path);
+
         if (process.ExitCode != 0)
-        {
-            var error = await process.StandardError.ReadToEndAsync(cancellationToken);
-            
-            throw new Exception($"sqlite3 restore failed with exit code {process.ExitCode}: {error}");
-        }
+            throw new Exception($"mysql restore failed with exit code {process.ExitCode}");
         
         return true;
     }

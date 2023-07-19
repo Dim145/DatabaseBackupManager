@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-namespace DatabaseBackupManager.Data.Models;
+namespace Core.Models;
 
 public class Backup: BaseModel
 {

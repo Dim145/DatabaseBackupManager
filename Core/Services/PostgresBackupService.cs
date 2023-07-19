@@ -1,7 +1,8 @@
 using System.Diagnostics;
-using DatabaseBackupManager.Data.Models;
+using Core.Models;
+using Microsoft.Extensions.Configuration;
 
-namespace DatabaseBackupManager.Services;
+namespace Core.Services;
 
 public class PostgresBackupService: DatabaseBackup
 {

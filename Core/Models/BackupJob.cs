@@ -1,16 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Core.Services;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-namespace DatabaseBackupManager.Data.Models;
+namespace Core.Models;
 
 public class BackupJob: BaseModel
 {
-    private string[] _databases;
-    
     public BackupJob()
     {
-        Backups = new();
+        Backups = new List<Backup>();
     }
     
     public string Name { get; set; }
@@ -23,17 +22,13 @@ public class BackupJob: BaseModel
     [ValidateNever]
     public string DatabaseNames
     {
-        get => _databases is null ? null : string.Join(",", _databases);
-        set => _databases = value?.Split(',');
+        get => Databases is null ? null : string.Join(",", Databases);
+        set => Databases = value?.Split(',');
     }
     
     [NotMapped]
-    public string[] Databases
-    {
-        get => _databases;
-        set => _databases = value;
-    }
-    
+    public string[] Databases { get; set; }
+
     public string BackupFormat { get; set; }
     
     public int ServerId { get; set; }

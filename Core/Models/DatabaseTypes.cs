@@ -1,4 +1,4 @@
-namespace DatabaseBackupManager.Models;
+namespace Core.Models;
 
 public enum DatabaseTypes
 {

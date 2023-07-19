@@ -1,9 +1,9 @@
-@model DatabaseBackupManager.Data.Models.BackupJob
+@model Core.Models.BackupJob
 
 @{
     ViewBag.Title = "create a backup job";
     
-    var servers = ViewBag.Servers as List<DatabaseBackupManager.Data.Models.Server>;
+    var servers = ViewBag.Servers as List<Core.Models.Server>;
     var databases = ViewBag.Databases as string[];
     
     var step = Model.DatabaseNames switch {

@@ -1,7 +1,8 @@
 using System.Globalization;
 using System.IO.Compression;
+using Core;
+using Core.Models;
 using DatabaseBackupManager.Data;
-using DatabaseBackupManager.Data.Models;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -94,7 +95,7 @@ public class HangfireService
     public async Task<string> CompressFileIfNeeded()
     {
         var dayBeforeCompression = TimeSpan.FromDays(Configuration.GetValue<int>(Constants.DayBeforeCompressionName));
-        var backupRoot = Configuration.GetValue<string>(Constants.BackupPathAppSettingName);
+        var backupRoot = Configuration.GetValue<string>(Core.Constants.BackupPathAppSettingName);
         
         var files = Directory.GetFiles(backupRoot, "*.*", new EnumerationOptions
         {

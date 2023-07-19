@@ -1,4 +1,4 @@
-﻿using DatabaseBackupManager.Data.Models;
+﻿using Core.Models;
 using DatabaseBackupManager.Models;
 using DatabaseBackupManager.Services;
 using Hangfire;
@@ -77,7 +77,7 @@ public class ApplicationDbContext : IdentityDbContext
         
         return res;
     }
-
+    
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         CallBeforeSaveChangesCallbacks();

@@ -20,7 +20,7 @@ public class FileWatcherService: BackgroundService
         DbContext = ServiceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         Configuration = ServiceScope.ServiceProvider.GetRequiredService<IConfiguration>();
         
-        Watcher = new FileSystemWatcher(Configuration.GetValue<string>(Constants.BackupPathAppSettingName))
+        Watcher = new FileSystemWatcher(Configuration.GetValue<string>(Core.Constants.BackupPathAppSettingName))
         {
             IncludeSubdirectories = true
         };

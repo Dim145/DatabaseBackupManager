@@ -1,7 +1,7 @@
 using System.IO.Compression;
-using DatabaseBackupManager.Data.Models;
+using Core.Models;
 
-namespace DatabaseBackupManager.Services;
+namespace Core.Services;
 
 public abstract class DatabaseBackup
 {

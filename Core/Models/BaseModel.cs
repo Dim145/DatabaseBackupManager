@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace DatabaseBackupManager.Data.Models;
+namespace Core.Models;
 
 public abstract class BaseModel
 {
