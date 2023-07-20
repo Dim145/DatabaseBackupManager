@@ -28,7 +28,7 @@ public class Agent: BaseModel
     public AgentState State => LastSeen switch
     {
         null => AgentState.Waiting,
-        _ when DateTime.UtcNow - LastSeen > TimeSpan.FromMinutes(5) => AgentState.NotResponding,
+        _ when DateTime.UtcNow - LastSeen?.ToUniversalTime() > TimeSpan.FromMinutes(5) => AgentState.NotResponding,
         _ => AgentState.Running
     };
 }

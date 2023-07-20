@@ -13,13 +13,13 @@
             @switch (Model.State)
             {
                 case AgentState.Waiting :
-                    <span class="badge badge-warning">Waiting for first agent connection</span>
+                    <span class="text-warning">Waiting for first agent connection</span>
                     break;
                 case AgentState.Running :
-                    <span class="badge badge-success">Running (Last seen at: @Model.LastSeen?.ToString("dd/MM/yyyy HH:mm:ss")) </span>
+                    <span class="text-dark">Running (Last seen at: @Model.LastSeen?.ToString("dd/MM/yyyy HH:mm:ss")) </span>
                     break;
                 case AgentState.NotResponding :
-                    <span class="badge badge-danger">Not responding (Last seen at: @Model.LastSeen?.ToString("dd/MM/yyyy HH:mm:ss")) </span>
+                    <span class="text-danger">Not responding (Last seen at: @Model.LastSeen?.ToString("dd/MM/yyyy HH:mm:ss")) </span>
                     break;
                 default:
                     <span>Unknown</span>

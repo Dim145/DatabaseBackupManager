@@ -55,13 +55,23 @@ public class AgentController: Controller
             return View(agent);
         }
 
+        var arrayOfGuid = new[]
+        {
+            Guid.NewGuid().ToString("X"),
+            Guid.NewGuid().ToString("N"),
+            Guid.NewGuid().ToString("D")
+        };
+        
+        // random sort the array
+        Array.Sort(arrayOfGuid, (x, y) => new Random().Next(-1, 2));
+        
         agent.Active = false;
-        agent.Token = $"{Guid.NewGuid():X}{Guid.NewGuid():N}{Guid.NewGuid():D}";
+        agent.Token = string.Join("", arrayOfGuid);
         
         await DbContext.Agents.AddAsync(agent);
         await DbContext.SaveChangesAsync();
         
-        return RedirectToAction(nameof(Details));
+        return RedirectToAction(nameof(Details), new { id = agent.Id });
     }
     
     [HttpGet("{id:int}")]
@@ -69,7 +79,7 @@ public class AgentController: Controller
     {
         var agent = await DbContext.Agents.FindAsync(id);
         
-        if (agent == null || DateTime.UtcNow - agent.CreatedAt > TimeSpan.FromMinutes(5))
+        if (agent == null || DateTime.UtcNow - agent.CreatedAt.ToUniversalTime() > TimeSpan.FromMinutes(5))
             return NotFound();
         
         return View(agent);
