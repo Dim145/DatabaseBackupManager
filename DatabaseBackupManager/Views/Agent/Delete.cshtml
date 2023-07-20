@@ -1,2 +1,25 @@
 @model Core.Models.Agent
 
+@{
+    ViewBag.Title = "Delete agent";
+}
+
+<h2>Delete agent @Model.Name ?</h2>
+
+<p class="alert alert-warning">
+    Warning: this action only deletes the agent from the database. The agent will still be able to connect to the server. <br/>
+    You havre to down the agent to prevent it from connecting to the server.
+</p>
+
+<form asp-action="DeletePost" asp-route-id="@Model.Id">
+    <input type="hidden" asp-for="Id" />
+    
+    <div class="row mt-2">
+        <div class="col">
+            <div class="form-group">
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                <input type="submit" value="Delete" class="btn btn-danger"/>
+            </div>
+        </div>
+    </div>
+</form>

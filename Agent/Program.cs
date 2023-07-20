@@ -35,9 +35,15 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-var appTask = app.RunAsync();
+var cancellationTokenSource = new CancellationTokenSource();
+
+var appTask = app.RunAsync(cancellationTokenSource.Token);
 
 var client = new HttpClient();
+
+// get .net server url
+var serverUrl = Environment.GetEnvironmentVariable("AGENT_URL") ?? "http://localhost:5000";
+client.DefaultRequestHeaders.Add("Agent-Url", serverUrl);
 
 while (!appTask.IsCompleted)
 {
@@ -52,7 +58,7 @@ while (!appTask.IsCompleted)
         Console.Error.WriteLine(e);
     }
 
-    await Task.Delay(TimeSpan.FromMinutes(5));
+    await Task.Delay(TimeSpan.FromMinutes(5), cancellationTokenSource.Token);
 }
 
 if(appTask.IsFaulted)

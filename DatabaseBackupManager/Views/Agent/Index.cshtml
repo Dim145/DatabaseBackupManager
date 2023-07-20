@@ -1,2 +1,61 @@
+@using Core.Models
 @model List<Core.Models.Agent>
 
+@{
+    ViewBag.Title = "Agents list";
+}
+
+<h2>Agents</h2>
+
+<div class="row">
+    <div class="col">
+        <p>
+            <a asp-controller="Agent" asp-action="Create" class="btn btn-success">Create New</a>
+        </p>    
+    </div>
+    
+    <div class="col text-end">
+        <form method="get">
+            <input type="text" placeholder="search in name" name="sn" class="form-control d-inline" style="max-width: 150px;" value="@ViewBag.SearchName" />
+            <button type="submit" class="btn btn-secondary">
+                search
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <h3>Configured agents:</h3>
+    </div>
+</div>
+
+<div class="row">
+    @foreach (var agent in Model.Where(a => a.State != AgentState.Waiting))
+    {
+        <div class="col-3">
+            <partial name="_AgentCardItem" model="agent" />
+        </div>
+    }
+</div>
+
+<div class="row">
+    <div class="col">
+        <hr/>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <h3>Waiting agents:</h3>
+    </div>
+</div>
+
+<div class="row">
+    @foreach (var agent in Model.Where(a => a.State == AgentState.Waiting))
+    {
+        <div class="col-3">
+            <partial name="_AgentCardItem" model="agent" />
+        </div>
+    }
+</div>

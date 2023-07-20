@@ -21,8 +21,8 @@ public class AgentApiController: ControllerBase
         
         if (agent == null)
             return NotFound();
-        
-        agent.Url = new Uri(Request.Host.ToUriComponent());
+
+        agent.Url = new Uri(Request.Headers["Agent-Url"]);
         agent.LastSeen = DateTime.UtcNow;
 
         return Ok();

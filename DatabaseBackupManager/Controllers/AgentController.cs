@@ -69,7 +69,7 @@ public class AgentController: Controller
     {
         var agent = await DbContext.Agents.FindAsync(id);
         
-        if (agent == null)
+        if (agent == null || DateTime.UtcNow - agent.CreatedAt > TimeSpan.FromMinutes(5))
             return NotFound();
         
         return View(agent);
@@ -88,7 +88,7 @@ public class AgentController: Controller
     
     [HttpPost("{id:int}/delete")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id, Agent agent)
+    public async Task<IActionResult> DeletePost(int id)
     {
         var agentToDelete = await DbContext.Agents.FindAsync(id);
         
@@ -96,6 +96,21 @@ public class AgentController: Controller
             return NotFound();
         
         DbContext.Agents.Remove(agentToDelete);
+        await DbContext.SaveChangesAsync();
+        
+        return RedirectToAction(nameof(Index));
+    }
+    
+    [HttpGet("{id:int}/changeActive")]
+    public async Task<IActionResult> ChangeActiveState(int id)
+    {
+        var agent = await DbContext.Agents.FindAsync(id);
+        
+        if (agent == null)
+            return NotFound();
+        
+        agent.Active = !agent.Active;
+        
         await DbContext.SaveChangesAsync();
         
         return RedirectToAction(nameof(Index));

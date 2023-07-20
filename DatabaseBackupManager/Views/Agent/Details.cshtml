@@ -1,2 +1,21 @@
 @model Core.Models.Agent
 
+<div class="alert alert-info">
+    You  can view this  page only 5 minutes after creating the agent.
+</div>
+
+<p>
+    The agent "@Model.Name" is created and waiting for the server to connect.
+</p>
+
+<p>
+    The token is <span class="text-primary rounded bg-secondary p-2 pointer-event" onclick="navigator.clipboard.writeText('@Model.Token')">
+        @Model.Token <i class="bi bi-clipboard"></i>
+    </span>
+</p>
+
+<div class="row">
+    <div class="col">
+        <a asp-action="Index" class="btn btn-secondary">Back to list</a>
+    </div>
+</div>

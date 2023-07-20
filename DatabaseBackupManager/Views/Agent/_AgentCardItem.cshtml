@@ -1,0 +1,39 @@
+@using Core.Models
+@model Core.Models.Agent
+
+<div class="card @(Model.Active ? "" : "border-danger") " style="width: 18rem;">
+    <div class="card-body">
+        <h5 class="card-title">#@Model.Id - @Model.Name</h5>
+        @if (Model.Url != null)
+        {
+            <h6 class="card-subtitle mb-2 text-muted">@Model.Url</h6>
+        }
+        <div class="card-text">
+            <h4>State</h4>
+            @switch (Model.State)
+            {
+                case AgentState.Waiting :
+                    <span class="badge badge-warning">Waiting for first agent connection</span>
+                    break;
+                case AgentState.Running :
+                    <span class="badge badge-success">Running (Last seen at: @Model.LastSeen?.ToString("dd/MM/yyyy HH:mm:ss")) </span>
+                    break;
+                case AgentState.NotResponding :
+                    <span class="badge badge-danger">Not responding (Last seen at: @Model.LastSeen?.ToString("dd/MM/yyyy HH:mm:ss")) </span>
+                    break;
+                default:
+                    <span>Unknown</span>
+                    break;
+            }
+            <hr/>
+            
+            <p>
+                Database Type: @Model.Type <br/>
+                @(Model.Active ? "Activated" : "Not activated")
+            </p>
+        </div>
+        
+        <a asp-controller="Agent" asp-action="ChangeActiveState" asp-route-id="@Model.Id" class="btn btn-primary">@(Model.Active ? "disable" : "enable")</a>
+        <a asp-controller="Agent" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Delete</a>
+    </div>
+</div>

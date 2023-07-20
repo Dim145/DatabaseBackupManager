@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Core.Models;
 
@@ -22,4 +23,12 @@ public class Agent: BaseModel
     
     public DateTime? LastSeen { get; set; }
     public DateTime? LastUsed { get; set; }
+
+    [NotMapped]
+    public AgentState State => LastSeen switch
+    {
+        null => AgentState.Waiting,
+        _ when DateTime.UtcNow - LastSeen > TimeSpan.FromMinutes(5) => AgentState.NotResponding,
+        _ => AgentState.Running
+    };
 }

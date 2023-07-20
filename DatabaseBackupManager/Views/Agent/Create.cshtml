@@ -1,2 +1,37 @@
+@using Core.Models
+@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model Core.Models.Agent
 
+@{
+    ViewBag.Title = "Create agent";
+}
+
+<h2>Create new Agent</h2>
+
+<form asp-action="Create" method="post">
+    
+    <div class="row">
+        <div class="col-6">
+            <label asp-for="Name" class="control-label"></label>
+            <input asp-for="Name" type="text" required class="form-control"/>
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+        
+        <div class="col-6">
+            <label asp-for="Type" class="control-label"></label>
+            <select asp-for="Type" class="form-select" required asp-items="Enum.GetValues<DatabaseTypes>().Select(x => new SelectListItem(x.ToString(), x.ToString()))">
+                <option value="">-- Select database type --</option>
+            </select>
+            <span asp-validation-for="Type" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col">
+            <div class="form-group">
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                <input type="submit" value="Create" class="btn btn-primary"/>
+            </div>
+        </div>
+    </div>
+</form>
