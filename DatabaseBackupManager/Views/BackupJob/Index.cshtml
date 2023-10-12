@@ -28,7 +28,7 @@
     {
         <tr class="@(backupJob.Enabled ? "" : "bg-danger")">
             <td>@backupJob.Name</td>
-            <td data-tippy="@( backupJob.Enabled ? $"Next execution: {CronExpression.Parse(backupJob.Cron).GetNextOccurrence(DateTime.UtcNow, true):dd/MM/yyyy HH:mm:ss}" : "execution is disabled")">
+            <td data-tippy="@( backupJob.Enabled ? $"Next execution: {(backupJob.Cron?.TryParseCron(out  var expression) ?? false ? expression.GetNextOccurrence(DateTime.UtcNow, true)?.ToString("dd/MM/yyyy HH:mm:ss") ?? "No next execution" : "Invalid expression")}" : "execution is disabled")">
                 @backupJob.Cron
             </td>
             <td>@backupJob.DatabaseNames</td>

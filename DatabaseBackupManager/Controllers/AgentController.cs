@@ -63,7 +63,7 @@ public class AgentController: Controller
         };
         
         // random sort the array
-        Array.Sort(arrayOfGuid, (x, y) => new Random().Next(-1, 2));
+        Array.Sort(arrayOfGuid, (_, _) => new Random().Next(-1, 2));
         
         agent.Active = false;
         agent.Token = string.Join("", arrayOfGuid);

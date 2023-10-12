@@ -147,9 +147,7 @@ public class ApplicationDbContext : IdentityDbContext
 
         foreach (var backupJobTracker in changedBackupJobTrackers)
         {
-            var backupJob = backupJobTracker.Entity as BackupJob;
-            
-            if(backupJob is null)
+            if(backupJobTracker.Entity is not BackupJob backupJob)
                 continue;
             
             switch (backupJobTracker.State)

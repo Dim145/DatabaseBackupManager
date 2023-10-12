@@ -19,15 +19,15 @@ public static class Constants
     {
         try
         {
-            var bytes = size;
+            double bytes = size;
             var suffixIndex = 0;
         
             while (bytes > 1024 && suffixIndex < FileSizeSuffixes.Length - 1)
             {
-                bytes /= 1024;
+                bytes /= 1024.0;
                 suffixIndex++;
             }
-            return $"{bytes} {FileSizeSuffixes[suffixIndex]}";
+            return $"{bytes:F} {FileSizeSuffixes[suffixIndex]}";
         }
         catch (Exception e)
         {

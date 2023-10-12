@@ -1,5 +1,6 @@
 using Core.Models;
 using Core.Services;
+using Cronos;
 using DatabaseBackupManager.Services;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -41,5 +42,19 @@ public static class Constants
     internal static string GetJobNameForBackupJob(string jobName, int backupJobId)
     {
         return $"BackupJob-{jobName}-{backupJobId}";
+    }
+
+    internal static bool TryParseCron(this string cron, out CronExpression expression, CronFormat? format = null)
+    {
+        try
+        {
+            expression = CronExpression.Parse(cron, format ?? CronFormat.Standard);
+            return expression != null;
+        }
+        catch (Exception)
+        {
+            expression = null;
+            return false;
+        }
     }
 }
