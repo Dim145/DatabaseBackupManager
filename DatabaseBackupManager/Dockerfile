@@ -1,6 +1,9 @@
 ﻿FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 COPY ["DatabaseBackupManager/DatabaseBackupManager.csproj", "DatabaseBackupManager/"]
+COPY ["Core/Core.csproj", "Core/"]
+COPY ["Agent/Agent.csproj", "Agent/"]
+
 RUN dotnet restore "DatabaseBackupManager/DatabaseBackupManager.csproj" --runtime linux-x64
 
 RUN dotnet dev-certs https --clean
