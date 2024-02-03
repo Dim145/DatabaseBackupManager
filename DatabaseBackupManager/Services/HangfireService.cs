@@ -25,7 +25,6 @@ public class HangfireService
     public async Task BackupDatabase(int backupJobId)
     {
         var backupJob = await DbContext.BackupJobs
-            .Include(b => b.Server)
             .FirstOrDefaultAsync(b => b.Id == backupJobId);
         
         if (backupJob is null)
@@ -35,49 +34,64 @@ public class HangfireService
         
         if(!backupJob.Enabled)
             throw new Exception($"BackupJob '{backupJob.Name}' is not enabled");
-        
-        if(backupJob.Server is null)
-            throw new Exception($"BackupJob '{backupJob.Name}' has no server or server is deleted");
 
-        var backupService = backupJob.Server.Type.GetService(Configuration).ForServer(backupJob.Server);
-
-        var databases = backupJob.DatabaseNames.Split(Constants.InputFieldDatabaseNameSeparator);
-        
-        var listOfErrors = new List<string>();
-        
-        foreach (var database in databases)
+        switch (backupJob.ServerType)
         {
-            try
-            {
-                var backup = await backupService.BackupDatabase(database);
-            
-                if (backup is null)
-                    throw new Exception("Server of service is null");
+            case nameof(Server):
+                var server = await DbContext.Servers.FirstOrDefaultAsync(s => s.Id == backupJob.ServerId);
                 
-                backup.JobId = backupJob.Id;
-                backup.Job = backupJob;
+                if(server is null)
+                    throw new Exception($"BackupJob '{backupJob.Name}' has no server, server is deleted or not of type Server");
+
+                var backupService = backupJob.Server.Type.GetService(Configuration).ForServer(server);
+
+                var databases = backupJob.DatabaseNames.Split(Constants.InputFieldDatabaseNameSeparator);
+        
+                var listOfErrors = new List<string>();
+        
+                foreach (var database in databases)
+                {
+                    try
+                    {
+                        var backup = await backupService.BackupDatabase(database);
             
-                await DbContext.Backups.AddAsync(backup);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
+                        if (backup is null)
+                            throw new Exception("Server of service is null");
                 
-                listOfErrors.Add($"{database}: {e.Message}");
-            }
+                        backup.JobId = backupJob.Id;
+                        backup.Job = backupJob;
+            
+                        await DbContext.Backups.AddAsync(backup);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                
+                        listOfErrors.Add($"{database}: {e.Message}");
+                    }
+                }
+        
+                await DbContext.SaveChangesAsync();
+        
+                if (listOfErrors.Any())
+                    throw new Exception($"Backup of certain databases failed: {string.Join(", ", listOfErrors)}");
+                break;
+            
+            case nameof(Agent):
+                
+                // todo call agent  and wait  for result (with singleton service ?)
+                
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(backupJob.ServerType), backupJob.ServerType,
+                    "ServerType is not supported");
         }
-        
-        await DbContext.SaveChangesAsync();
-        
-        if (listOfErrors.Any())
-            throw new Exception($"Backup of certain databases failed: {string.Join(", ", listOfErrors)}");
     }
 
     [AutomaticRetry(Attempts = 3, DelaysInSeconds = new []{ 10, 30, 60 })]
     public async Task CleanBackupRep(int backupJobId)
     {
         var backupJob = await DbContext.BackupJobs
-            .Include(b => b.Server)
             .Include(b => b.Backups)
             .FirstOrDefaultAsync(b => b.Id == backupJobId);
         

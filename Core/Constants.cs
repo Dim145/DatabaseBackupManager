@@ -14,6 +14,8 @@ public static class Constants
     public const string SqliteBackupFileExtension = "sqlitebak";
     
     public static readonly string[] FileSizeSuffixes = { "B", "KB", "MB", "GB", "TB" };
+
+    public const short TimeBeforeTimeoutAgent = 5;
  
     public static string ToSizeString(this long size)
     {

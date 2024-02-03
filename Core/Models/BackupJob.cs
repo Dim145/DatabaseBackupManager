@@ -33,9 +33,11 @@ public class BackupJob: BaseModel
     
     public int ServerId { get; set; }
     
-    [Required]
-    [ForeignKey(nameof(ServerId))]
-    public Server Server { get; set; }
+    [NotMapped]
+    public IDatabase Server { get; set; }
+    
+    
+    public string ServerType { get; set; }
     
     public List<Backup> Backups { get; set; }
 }

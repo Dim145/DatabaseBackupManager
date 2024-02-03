@@ -181,30 +181,38 @@ public class BackupController: Controller
     {
         var backup = await DbContext.Backups
             .Include(b => b.Job)
-            .Include(b => b.Job.Server)
             .FirstOrDefaultAsync(b => b.Id == id);
 
         if (backup is null)
             return NotFound();
 
-        if (backup.Job?.Server is null)
+        if (backup.Job is null)
             return BadRequest();
 
-        var restoreService = backup.Job.Server.Type.GetService(Configuration).ForServer(backup.Job.Server);
-
-        try
+        switch (backup.Job.ServerType)
         {
-            await restoreService.RestoreDatabase(backup);
-            
-            TempData["Success"] = "Database restored successfully";
-        }
-        catch (Exception e)
-        {
-            Console.Error.WriteLine(e);
-            
-            TempData["Error"] = e.Message;
-        }
+            case nameof(Server):
+                var server = await DbContext.Servers.FirstOrDefaultAsync(s => s.Id == backup.Job.ServerId);
+                
+                var restoreService = backup.Job.Server.Type.GetService(Configuration).ForServer(server);
 
-        return RedirectToAction("Restore", new { id });
+                try
+                {
+                    await restoreService.RestoreDatabase(backup);
+            
+                    TempData["Success"] = "Database restored successfully";
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine(e);
+            
+                    TempData["Error"] = e.Message;
+                }
+                
+                return RedirectToAction("Restore", new { id });
+            
+            default:
+                return BadRequest($"ServerType {backup.Job.ServerType} is not supported for restoring now");
+        }
     }
 }

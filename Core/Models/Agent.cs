@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Core.Models;
 
-public class Agent: BaseModel
+public class Agent: BaseModel, IDatabase
 {
     [Required]
     public string Name { get; set; }
@@ -23,12 +23,23 @@ public class Agent: BaseModel
     
     public DateTime? LastSeen { get; set; }
     public DateTime? LastUsed { get; set; }
+    
+    [Column(TypeName = "json")]
+    public string[] Databases { get; set; }
+    
+    [Column(TypeName = "json")]
+    public string[] JobQueue { get; set; }
 
     [NotMapped]
     public AgentState State => LastSeen switch
     {
         null => AgentState.Waiting,
-        _ when DateTime.UtcNow - LastSeen?.ToUniversalTime() > TimeSpan.FromMinutes(5) => AgentState.NotResponding,
+        _ when DateTime.UtcNow - LastSeen?.ToUniversalTime() > TimeSpan.FromMinutes(Constants.TimeBeforeTimeoutAgent) => AgentState.NotResponding,
         _ => AgentState.Running
     };
+
+    public Task<string[]> ListDatabases()
+    {
+        return Task.FromResult(Databases);
+    }
 }

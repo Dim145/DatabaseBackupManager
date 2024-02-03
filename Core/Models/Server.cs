@@ -10,7 +10,7 @@ using MySqlConnectionStringBuilder = MySql.Data.MySqlClient.MySqlConnectionStrin
 
 namespace Core.Models;
 
-public class Server: BaseModel
+public class Server: BaseModel, IDatabase
 {
     [Required] 
     public DatabaseTypes Type { get; set; }

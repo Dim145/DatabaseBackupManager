@@ -1,5 +1,6 @@
 using System.Text;
 using Agent.Models;
+using Agent.Services;
 using Core.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,21 @@ Parameters.Type = Enum.TryParse<DatabaseTypes>(Environment.GetEnvironmentVariabl
 if(!Parameters.IsParametersValid())
     throw new Exception("Invalid parameters");
 
+builder.Services.AddHostedService<PingPongService>();
+
+// get .net server url
+var serverUrl = Environment.GetEnvironmentVariable("AGENT_URL") ?? "http://localhost:5000";
+
+builder.Services.AddHttpClient<BackupService>(c =>
+{
+    c.DefaultRequestHeaders.Add("Agent-Url", serverUrl);
+});
+
+builder.Services.AddHttpClient<PingPongService>(c =>
+{
+    c.DefaultRequestHeaders.Add("Agent-Url", serverUrl);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -37,29 +53,4 @@ app.MapControllers();
 
 var cancellationTokenSource = new CancellationTokenSource();
 
-var appTask = app.RunAsync(cancellationTokenSource.Token);
-
-var client = new HttpClient();
-
-// get .net server url
-var serverUrl = Environment.GetEnvironmentVariable("AGENT_URL") ?? "http://localhost:5000";
-client.DefaultRequestHeaders.Add("Agent-Url", serverUrl);
-
-while (!appTask.IsCompleted)
-{
-    try
-    {
-        var response = await client.PostAsync($"{Parameters.ManagerUrl}/api/agents/notify-presence", new StringContent($"{{\"token\": \"{Parameters.Token}\"}}", Encoding.UTF8, "application/json"));
-
-        Console.WriteLine(response.IsSuccessStatusCode ? "Heartbeat sent" : "Heartbeat failed");
-    }
-    catch (Exception e)
-    {
-        Console.Error.WriteLine(e);
-    }
-
-    await Task.Delay(TimeSpan.FromMinutes(5), cancellationTokenSource.Token);
-}
-
-if(appTask.IsFaulted)
-    throw appTask.Exception!;
+await app.RunAsync(cancellationTokenSource.Token);

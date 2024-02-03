@@ -67,6 +67,9 @@ public class BackupJobController: Controller
         }
         
         backupJob.Enabled = true;
+        
+        //todo add logic to detect servertype
+        backupJob.ServerType = nameof(Server);
 
         DbContext.BackupJobs.Add(backupJob);
         await DbContext.SaveChangesAsync();

@@ -4,6 +4,7 @@ using Cronos;
 using DatabaseBackupManager.Services;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.EntityFrameworkCore;
 
 namespace DatabaseBackupManager;
 
@@ -56,5 +57,22 @@ public static class Constants
             expression = null;
             return false;
         }
+    }
+    
+    internal static IEnumerable<BackupJob> IncludeServer(this IQueryable<BackupJob> backupJobs)
+    {
+        return backupJobs.ToList().Select(job =>
+        {
+            job.Server = job.ServerType switch
+            {
+                nameof(Server) => backupJobs.Provider.CreateQuery<Server>(backupJobs.Expression)
+                    .FirstOrDefault(s => s.Id == job.ServerId),
+                nameof(Agent) => backupJobs.Provider.CreateQuery<Agent>(backupJobs.Expression)
+                    .FirstOrDefault(s => s.Id == job.ServerId),
+                _ => null
+            };
+            
+            return job;
+        });
     }
 }
