@@ -3,6 +3,7 @@ using Core.Models;
 using DatabaseBackupManager.Data;
 using DatabaseBackupManager.Middleware;
 using DatabaseBackupManager.Models;
+using DatabaseBackupManager.Services.StorageService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -12,17 +13,13 @@ namespace DatabaseBackupManager.Controllers;
 
 [Route("backups")]
 [Authorize(Policy = nameof(Policies.ReaderRolePolicy))]
-public class BackupController: Controller
+public class BackupController(ApplicationDbContext dbContext, IStorageService storageService)
+    : Controller
 {
-    private ApplicationDbContext DbContext { get; }
-    private IConfiguration Configuration { get; }
-    
-    public BackupController(ApplicationDbContext dbContext, IConfiguration configuration)
-    {
-        DbContext = dbContext;
-        Configuration = configuration;
-    }
-    
+    private ApplicationDbContext DbContext { get; } = dbContext;
+    private IStorageService StorageService { get; } = storageService;
+
+
     [HttpGet]
     public IActionResult Index(BackupFilterViewModel filters, int page = 1, int pageSize = 20, string sort = null, string order = null)
     {
@@ -33,7 +30,7 @@ public class BackupController: Controller
         
         var query = DbContext.Backups
             .Include(b => b.Job)
-            .Include(b => b.Job.Server).AsQueryable();
+            .AsQueryable();
 
         ViewBag.TotalItems = query.Count();
         ViewBag.TotalPages = (int) Math.Ceiling((double) ViewBag.TotalItems / pageSize);
@@ -63,8 +60,21 @@ public class BackupController: Controller
                 case "FileName": 
                     query = query.Where(b => b.Path.Contains(value.ToString()));
                     break;
-                case "FileSize":
-                    query = query.ToList().Where(b => b.GetFileSizeString().Contains(value.ToString() ?? string.Empty)).AsQueryable();
+                case "Size":
+                    query = query.ToList().Where(b =>
+                    {
+                        try
+                        {
+                            return b.Size
+                                .ToSizeString()
+                                .Contains(value.ToString() ?? string.Empty);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.Error.WriteLine(e);
+                            return true;
+                        }
+                    }).AsQueryable();
                     break;
                 case "Date":
                     query = query.Where(b => b.BackupDate.Date == (value as DateTime?));
@@ -82,14 +92,9 @@ public class BackupController: Controller
                 "jobId" => b => b.Job.Name,
                 "date" => b => b.BackupDate,
                 "fileName" => b => b.FileName,
+                "size" => b => b.Size,
                 _ => null
             };
-
-            if (action == null && sort == "fileSize")
-            {
-                query = query.ToList().AsQueryable();
-                action = b => b.GetFileSize();
-            }
             
             if (action != null)
             {
@@ -123,15 +128,19 @@ public class BackupController: Controller
     {
         var backup = await DbContext.Backups
             .Include(b => b.Job)
-            .Include(b => b.Job.Server)
             .FirstOrDefaultAsync(b => b.Id == id);
 
         if (backup is null)
+        {
             return NotFound();
+        }
 
-        var file = System.IO.File.OpenRead(backup.Path);
+        var fileLink = await StorageService.DownloadLink(backup.Path, Seeds.StorageSettings.S3LinkExpiration);
         
-        return File(file, "application/octet-stream", backup.FileName);
+        if($"{fileLink}".StartsWith("http"))
+            return Redirect(fileLink);
+        
+        return File(fileLink, "application/octet-stream", backup.FileName);
     }
     
     [HttpGet("delete/{id:int}")]
@@ -139,14 +148,12 @@ public class BackupController: Controller
     public async Task<IActionResult> Delete(int id)
     {
         var backup = await DbContext.Backups
-            .Include(b => b.Job)
-            .Include(b => b.Job.Server)
             .FirstOrDefaultAsync(b => b.Id == id);
 
         if (backup is null)
             return NotFound();
 
-        System.IO.File.Delete(backup.Path);
+        await StorageService.Delete(backup.Path);
         
         DbContext.Backups.Remove(backup);
         await DbContext.SaveChangesAsync();
@@ -160,7 +167,6 @@ public class BackupController: Controller
     {
         var backup = await DbContext.Backups
             .Include(b => b.Job)
-            .Include(b => b.Job.Server)
             .FirstOrDefaultAsync(b => b.Id == id);
 
         if (backup is null)
@@ -172,6 +178,8 @@ public class BackupController: Controller
         if(TempData.TryGetValue("Error", out var errorValue))
             ViewBag.Error = errorValue;
         
+        ViewBag.Server = await DbContext.Servers.FirstOrDefaultAsync(s => s.Id == backup.Job.ServerId);
+        
         return View(backup);
     }
     
@@ -180,6 +188,7 @@ public class BackupController: Controller
     public async Task<IActionResult> RestorePost(int id)
     {
         var backup = await DbContext.Backups
+            .AsNoTracking()
             .Include(b => b.Job)
             .FirstOrDefaultAsync(b => b.Id == id);
 
@@ -192,13 +201,22 @@ public class BackupController: Controller
         switch (backup.Job.ServerType)
         {
             case nameof(Server):
-                var server = await DbContext.Servers.FirstOrDefaultAsync(s => s.Id == backup.Job.ServerId);
+                var server = await DbContext.Servers
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(s => s.Id == backup.Job.ServerId);
                 
-                var restoreService = backup.Job.Server.Type.GetService(Configuration).ForServer(server);
+                var restoreService = server.Type.GetService().ForServer(server);
 
                 try
                 {
+                    var tempFileInfo = await StorageService.Get(backup.Path);
+                    
+                    backup.Path = tempFileInfo.FullName;
+                    
                     await restoreService.RestoreDatabase(backup);
+                    
+                    if(System.IO.File.Exists(tempFileInfo.FullName))
+                        System.IO.File.Delete(tempFileInfo.FullName);
             
                     TempData["Success"] = "Database restored successfully";
                 }

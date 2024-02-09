@@ -12,6 +12,7 @@ public static class Constants
     public const string MySqlBackupFileExtension = "sql";
     public const string SqlServerBackupFileExtension = "bak";
     public const string SqliteBackupFileExtension = "sqlitebak";
+    public const string TempDirForBackups = "/tmp/backups/backup-manager";
     
     public static readonly string[] FileSizeSuffixes = { "B", "KB", "MB", "GB", "TB" };
 
@@ -39,12 +40,12 @@ public static class Constants
         }
     }
     
-    public static DatabaseBackup GetService(this DatabaseTypes type, IConfiguration conf) => type switch
+    public static DatabaseBackup GetService(this DatabaseTypes type) => type switch
     {
-        DatabaseTypes.Postgres => new PostgresBackupService(conf),
-        DatabaseTypes.MySql => new MySqlBackupService(conf),
-        DatabaseTypes.SqlServer => new SqlServerBackupService(conf),
-        DatabaseTypes.Sqlite => new SqliteBackupService(conf),
+        DatabaseTypes.Postgres => new PostgresBackupService(),
+        DatabaseTypes.MySql => new MySqlBackupService(),
+        DatabaseTypes.SqlServer => new SqlServerBackupService(),
+        DatabaseTypes.Sqlite => new SqliteBackupService(),
         _ => throw new Exception($"Server type {type} is not supported")
     };
 }

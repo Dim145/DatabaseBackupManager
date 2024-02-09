@@ -1,6 +1,7 @@
 ﻿using Core.Models;
 using DatabaseBackupManager.Models;
 using DatabaseBackupManager.Services;
+using DatabaseBackupManager.Services.StorageService;
 using Hangfire;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -21,21 +22,26 @@ public class ApplicationDbContext : IdentityDbContext
     private IEnumerable<AfterSaveChanges> _changes;
     
     private static string _passwordKey;
+    
+    private IStorageService StorageService { get; }
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IConfiguration conf)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IConfiguration conf, IStorageService storageService)
         : base(options)
     {
-        BeforeSaveChangesCallbacks = new List<Action>
-        {
-            UpdateTimestamps,
-            () => _changes = ChangeTracker.Entries().Where(p => p is {Entity: BaseModel}).Select(p => new AfterSaveChanges(p)).ToList()
-        };
+        StorageService = storageService;
         
-        AfterSaveChangesCallbacks = new List<Action>
-        {
+        BeforeSaveChangesCallbacks =
+        [
+            UpdateTimestamps,
+            () => _changes = ChangeTracker.Entries().Where(p => p is { Entity: BaseModel })
+                .Select(p => new AfterSaveChanges(p)).ToList()
+        ];
+        
+        AfterSaveChangesCallbacks =
+        [
             SynchronizeBackupJobsWithHangfire,
             SynchronizeBackupWithFiles
-        };
+        ];
 
         if (string.IsNullOrWhiteSpace(_passwordKey))
         {
@@ -133,9 +139,16 @@ public class ApplicationDbContext : IdentityDbContext
             
             if(string.IsNullOrWhiteSpace(path))
                 continue;
-            
-            if (File.Exists(path))
-                File.Delete(path);
+
+            try
+            {
+                if (StorageService.Exists(path).GetAwaiter().GetResult())
+                    StorageService.Delete(path).GetAwaiter().GetResult();
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e);
+            }
         }
     }
 

@@ -5,6 +5,7 @@
     
     var successMessage = ViewBag.Success as string;
     var errorMessage = ViewBag.Error as string;
+    var server = ViewBag.Server as Core.Models.Server;
 }
 
 <br/>
@@ -26,7 +27,7 @@
 <form asp-action="RestorePost" asp-route-id="@Model.Id">
     
     <h4 class="mb-4">
-        Restore backup @Model.FileName to database @string.Join("_", Model.FileName.Split("_").SkipLast(1)) on server "@Model.Job.Server.Name" ?
+        Restore backup @Model.FileName to database @string.Join("_", Model.FileName.Split("_").SkipLast(1)) on server "@server?.Name" ?
     </h4>
     
     <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button>

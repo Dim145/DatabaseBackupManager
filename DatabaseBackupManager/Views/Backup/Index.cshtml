@@ -1,6 +1,7 @@
 @using DatabaseBackupManager.Data
 @using DatabaseBackupManager.Middleware
 @using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Core
 @model List<Core.Models.Backup>
 
 
@@ -100,9 +101,9 @@
             <tr>
                 <td>@backup.FileName</td>
                 <td>@backup.BackupDate.ToString("dd/MM/yyyy HH:mm:ss")</td>
-                <td>@backup.GetFileSizeString()</td>
+                <td>@backup.Size.ToSizeString()</td>
                 <td>@(backup.Job?.Name ?? "no information")</td>
-                <td>@(backup.Job?.Server?.Name ?? "no information")</td>
+                <td>@((ViewBag.Servers is IEnumerable<SelectListItem> serversList ? serversList.FirstOrDefault(i => i.Value == backup.Job?.ServerId.ToString())?.Text : null) ?? "no information")</td>
                 <td colspan="2">
                     <a class="btn btn-primary" asp-action="Download" asp-route-id="@backup.Id">download</a>
                     

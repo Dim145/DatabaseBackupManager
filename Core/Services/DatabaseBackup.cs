@@ -6,12 +6,10 @@ namespace Core.Services;
 public abstract class DatabaseBackup
 {
     protected Server Server { get; private set; }
-    protected string BackupPath { get; }
     
-    protected DatabaseBackup(string backupPath, Server server = null)
+    protected DatabaseBackup(Server server = null)
     {
         Server = server;
-        BackupPath = backupPath;
     }
 
     public DatabaseBackup ForServer(Server server)
@@ -24,7 +22,7 @@ public abstract class DatabaseBackup
     {
         var date = DateTime.Now;
         var filename = $"{databaseName.Replace(" ", "-")}_{date:yyyyMMddHHmmss}.{extension}";
-        var path = Path.Combine(BackupPath, Server.Type.ToString(), Server.Name.Replace(" ", "_"));
+        var path = Path.Combine(Constants.TempDirForBackups, Server.Type.ToString(), Server.Name.Replace(" ", "_"));
         
         if (!Directory.Exists(path))
             Directory.CreateDirectory(path);

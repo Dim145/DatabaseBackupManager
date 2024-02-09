@@ -8,13 +8,37 @@ using Microsoft.EntityFrameworkCore;
 using DatabaseBackupManager.Data;
 using DatabaseBackupManager.Middleware;
 using DatabaseBackupManager.Services;
+using DatabaseBackupManager.Services.StorageService;
 using Hangfire;
 using Hangfire.Storage.SQLite;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Minio;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.InitSettingsVars();
+
+switch (Seeds.StorageSettings.StorageType)
+{
+    case "S3":
+        builder.Services.AddMinio(configureClient =>
+        {
+            configureClient
+                .WithHttpClient(new HttpClient(), false)
+                .WithRegion(Seeds.StorageSettings.S3Region)
+                .WithEndpoint(Seeds.StorageSettings.S3Endpoint)
+                .WithCredentials(Seeds.StorageSettings.AccessKey, Seeds.StorageSettings.SecretKey);
+
+            if (Seeds.StorageSettings.S3UseSSL)
+                configureClient.WithSSL();
+        }, ServiceLifetime.Scoped);
+        
+        builder.Services.AddScoped<IStorageService, S3StorageService>();
+        break;
+    default:
+        builder.Services.AddScoped<IStorageService, LocalStorageService>();
+        break;
+}
 
 // Add services to the container.
 var dataConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -130,4 +154,16 @@ context.Database.Migrate();
 await services.SeedDatabase();
 await HangfireService.InitHangfireRecurringJob(context, builder.Configuration);
 
-app.Run();
+try
+{
+    app.Run();
+}
+catch (Exception e)
+{
+    Console.Error.WriteLine(e);
+}
+finally
+{
+    if(Directory.Exists(Core.Constants.TempDirForBackups))
+        Directory.Delete(Core.Constants.TempDirForBackups, true);
+}

@@ -37,7 +37,7 @@ public class BackupService
             return null;
         }
         
-        var service = Parameters.Type?.GetService(Configuration)?.ForServer(server);
+        var service = Parameters.Type?.GetService()?.ForServer(server);
 
         return await service!.BackupDatabase(database);
     }

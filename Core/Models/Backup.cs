@@ -14,6 +14,7 @@ public class Backup: BaseModel
     
     public DateTime BackupDate { get; set; }
     public string Path { get; set; }
+    public long Size { get; set; }
     
     [NotMapped]
     [ValidateNever]
@@ -22,31 +23,4 @@ public class Backup: BaseModel
     [NotMapped]
     [ValidateNever]
     public string FileName => System.IO.Path.GetFileName(Path);
-    
-    private FileInfo _fileInfo;
-
-    public string GetFileSizeString()
-    {
-        try
-        {
-            return GetFileSize().ToSizeString();
-        }
-        catch (FileNotFoundException)
-        {
-            return "File not found";
-        }
-        catch (Exception e)
-        {
-            Console.Error.WriteLine(e);
-            
-            return "Unknown";
-        }
-    }
-    
-    /// <summary>
-    ///     Returns the size of the file in bytes
-    /// </summary>
-    /// <exception cref="FileNotFoundException"></exception>
-    /// <returns></returns>
-    public long GetFileSize() => (_fileInfo ??= new FileInfo(Path)).Length;
 }

@@ -1,5 +1,6 @@
 using DatabaseBackupManager.Models;
 using Microsoft.AspNetCore.Identity;
+using Minio.DataModel.Encryption;
 
 namespace DatabaseBackupManager.Data;
 
@@ -7,6 +8,7 @@ internal static class Seeds
 {
     internal static MailSettings MailSettings { get; private set; }
     internal static DataSettings DataSettings { get; private set; }
+    internal static StorageSettings StorageSettings { get; private set; }
 
     internal static void InitSettingsVars(this IConfiguration parameters)
     {
@@ -18,7 +20,7 @@ internal static class Seeds
             Password = Environment.GetEnvironmentVariable("MailSettings__Password"),
             FromName = Environment.GetEnvironmentVariable("MailSettings__FromName"),
             Port = int.TryParse(Environment.GetEnvironmentVariable("MailSettings__Port"), out var port) ? port : 587,
-            UseSsl = bool.TryParse(Environment.GetEnvironmentVariable("MailSettings__UseSsl"), out var useSsl) && useSsl,
+            UseSsl = bool.TryParse(Environment.GetEnvironmentVariable("MailSettings__UseSsl"), out var mailUseSsl) && mailUseSsl,
         };
         
         DataSettings = parameters.GetSection("DataSettings").Get<DataSettings>() ?? new DataSettings
@@ -29,6 +31,25 @@ internal static class Seeds
             DefaultReaderRole = Environment.GetEnvironmentVariable("DataSettings__DefaultReaderRole") ?? "Reader",
             DefaultEditorRole = Environment.GetEnvironmentVariable("DataSettings__DefaultEditorRole") ?? "Editor",
             DefaultRestorerRole = Environment.GetEnvironmentVariable("DataSettings__DefaultRestorerRole") ?? "Restorer",
+        };
+        
+        StorageSettings = parameters.GetSection("StorageSettings").Get<StorageSettings>() ?? new StorageSettings
+        {
+            TempPath = Environment.GetEnvironmentVariable("StorageSettings__TempPath") ?? "/tmp/s3",
+            S3Bucket = Environment.GetEnvironmentVariable("StorageSettings__S3Bucket"),
+            S3DaysRetention = int.TryParse(Environment.GetEnvironmentVariable("StorageSettings__S3DaysRetention"), out var days) ? days : null,
+            ServerSideEncryption = Environment.GetEnvironmentVariable("StorageSettings__ServerSideEncryption") switch
+            {
+                "SSE-S3" => new SSES3(),
+                _ => null
+            },
+            StorageType = Environment.GetEnvironmentVariable("StorageSettings__StorageType") ?? "Local",
+            AccessKey = Environment.GetEnvironmentVariable("StorageSettings__AccessKey"),
+            SecretKey = Environment.GetEnvironmentVariable("StorageSettings__SecretKey"),
+            S3Endpoint = Environment.GetEnvironmentVariable("StorageSettings__S3Endpoint"),
+            S3UseSSL = bool.TryParse(Environment.GetEnvironmentVariable("StorageSettings__S3UseSSL"), out var s3UseSSL) && s3UseSSL,
+            S3Region = Environment.GetEnvironmentVariable("StorageSettings__S3Region"),
+            S3LinkExpiration = int.TryParse(Environment.GetEnvironmentVariable("StorageSettings__S3LinkExpiration"), out var expiration) ? expiration : 60,
         };
     }
     

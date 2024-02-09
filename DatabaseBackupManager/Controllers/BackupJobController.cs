@@ -20,14 +20,23 @@ public class BackupJobController: Controller
 
     public async Task<IActionResult> Index(string sn)
     {
-        var query = DbContext.BackupJobs.Include(b => b.Server).AsQueryable();
-
+        var query = DbContext.BackupJobs.AsQueryable();
+        
         if (!string.IsNullOrWhiteSpace(sn))
         {
             query = query.Where(s => s.Name.Contains(sn));
         }
         
         var backupJobs = await query.ToListAsync();
+        
+        Dictionary<int, Server> servers = new();
+        
+        foreach (var backupJob in backupJobs.Where(backupJob => !servers.ContainsKey(backupJob.ServerId)))
+        {
+            servers[backupJob.ServerId] = await DbContext.Servers.FirstOrDefaultAsync(s => s.Id == backupJob.ServerId);
+        }
+        
+        backupJobs.ForEach(b => b.Server = servers[b.ServerId]);
         
         ViewBag.SearchName = sn;
         

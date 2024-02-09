@@ -32,6 +32,8 @@ public class Server: BaseModel, IDatabase
     public int Port { get; set; }
 
     private string _connectionString;
+    
+    public List<BackupJob> BackupJobs { get; set; } = new();
 
     [NotMapped]
     [ValidateNever]

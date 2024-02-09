@@ -25,7 +25,7 @@ public static class Constants
 
     internal static void AddOrUpdateHangfireJob(string jobName, int jobId, string cron)
     {
-        HangfireService pseudoHangfireContext = new(null, null);
+        HangfireService pseudoHangfireContext = new(null, null, null);
         
         RecurringJob.AddOrUpdate(jobName, () => pseudoHangfireContext.BackupDatabase(jobId), cron);
     }

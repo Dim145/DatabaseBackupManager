@@ -3,6 +3,7 @@ using System;
 using DatabaseBackupManager.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DatabaseBackupManager.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240206223726_ModifyBackupJobAndBBackupStorage")]
+    partial class ModifyBackupJobAndBBackupStorage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.14");
@@ -59,7 +62,7 @@ namespace DatabaseBackupManager.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Agents", (string)null);
+                    b.ToTable("Agents");
                 });
 
             modelBuilder.Entity("Core.Models.Backup", b =>
@@ -90,7 +93,7 @@ namespace DatabaseBackupManager.Data.Migrations
 
                     b.HasIndex("JobId");
 
-                    b.ToTable("Backups", (string)null);
+                    b.ToTable("Backups");
                 });
 
             modelBuilder.Entity("Core.Models.BackupJob", b =>
@@ -131,7 +134,7 @@ namespace DatabaseBackupManager.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BackupJobs", (string)null);
+                    b.ToTable("BackupJobs");
                 });
 
             modelBuilder.Entity("Core.Models.Server", b =>
@@ -169,7 +172,7 @@ namespace DatabaseBackupManager.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Servers", (string)null);
+                    b.ToTable("Servers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

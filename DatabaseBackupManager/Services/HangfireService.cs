@@ -3,25 +3,23 @@ using System.IO.Compression;
 using Core;
 using Core.Models;
 using DatabaseBackupManager.Data;
+using DatabaseBackupManager.Services.StorageService;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace DatabaseBackupManager.Services;
 
-public class HangfireService
+public class HangfireService(
+    ApplicationDbContext dbContext,
+    IConfiguration configuration,
+    IStorageService storageService)
 {
-    private ApplicationDbContext DbContext { get; }
-    
-    private IConfiguration Configuration { get; }
-    
-    public HangfireService(ApplicationDbContext dbContext, IConfiguration configuration)
-    {
-        DbContext = dbContext;
-        Configuration = configuration;
-    }
+    private ApplicationDbContext DbContext { get; } = dbContext;
+    private IConfiguration Configuration { get; } = configuration;
+    private IStorageService StorageService { get; } = storageService;
 
-    [AutomaticRetry(Attempts = 1, DelaysInSeconds = new []{ 30 })]
+    [AutomaticRetry(Attempts = 1, DelaysInSeconds = [30])]
     public async Task BackupDatabase(int backupJobId)
     {
         var backupJob = await DbContext.BackupJobs
@@ -42,8 +40,10 @@ public class HangfireService
                 
                 if(server is null)
                     throw new Exception($"BackupJob '{backupJob.Name}' has no server, server is deleted or not of type Server");
+                
+                backupJob.Server = server;
 
-                var backupService = backupJob.Server.Type.GetService(Configuration).ForServer(server);
+                var backupService = backupJob.Server.Type.GetService().ForServer(server);
 
                 var databases = backupJob.DatabaseNames.Split(Constants.InputFieldDatabaseNameSeparator);
         
@@ -57,9 +57,19 @@ public class HangfireService
             
                         if (backup is null)
                             throw new Exception("Server of service is null");
+                        
+                        backup.Size = new FileInfo(backup.Path).Length;
+                        
+                        // backup is in tmp file, move it to storage
+                        var newPath = backup.Path[(Core.Constants.TempDirForBackups.Length + 1)..];
+                        await StorageService.MoveTo(backup.Path, newPath);
+                        
+                        if (File.Exists(backup.Path))
+                            File.Delete(backup.Path);
                 
                         backup.JobId = backupJob.Id;
                         backup.Job = backupJob;
+                        backup.Path = newPath;
             
                         await DbContext.Backups.AddAsync(backup);
                     }
@@ -106,6 +116,8 @@ public class HangfireService
         await DbContext.SaveChangesAsync();
     }
 
+    // only compress files in local storage.
+    // todo: add support for remote storage compression ? or just compress at the time of moving to remote storage ?
     public async Task<string> CompressFileIfNeeded()
     {
         var dayBeforeCompression = TimeSpan.FromDays(Configuration.GetValue<int>(Constants.DayBeforeCompressionName));
@@ -166,7 +178,7 @@ public class HangfireService
 
     public static async Task InitHangfireRecurringJob(ApplicationDbContext dbContext, IConfiguration conf)
     {
-        var hangfire = new HangfireService(null, null);
+        var hangfire = new HangfireService(null, null, null);
         var jobs = await dbContext.BackupJobs.Where(b => b.Enabled).ToArrayAsync();
 
         foreach (var job in jobs)

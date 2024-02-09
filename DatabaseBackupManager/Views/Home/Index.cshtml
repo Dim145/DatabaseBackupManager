@@ -28,19 +28,22 @@
     </div>
     
     <div class="row">
-        @if (ViewBag.Drives is DriveInfo[] drives)
+        @if (ViewBag.Drives is Dictionary<string, string>[] drives)
         {
             foreach (var drive in drives)
             {
                 <div class="col-sm-6 col-md-5 col-xl-3 col-lg-4 my-2">
                     <div class="card" style="width: 18rem;">
                         <div class="card-body">
-                            <h5 class="card-title">@drive.VolumeLabel</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">@(drive.VolumeLabel != drive.Name ? $"{drive.Name} ({drive.DriveFormat})" : drive.DriveFormat)</h6>
+                            <h5 class="card-title">@drive.GetValueOrDefault("Name")</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">@drive.GetValueOrDefault("Info")</h6>
                             <p class="card-text">
                                 
-                                <span> Used: @((drive.TotalSize - drive.AvailableFreeSpace).ToSizeString()) / @drive.TotalSize.ToSizeString()</span>
-                                <progress class="w-100" value="@(drive.TotalSize - drive.AvailableFreeSpace)" max="@drive.TotalSize"></progress>
+                                <span> Used: @(long.Parse(drive.GetValueOrDefault("Used")).ToSizeString()) / @(long.TryParse(drive.GetValueOrDefault("Total"), out var total ) ? total.ToSizeString() : drive.GetValueOrDefault("Total") ?? "Unknown")</span>
+                                @if (long.TryParse(drive.GetValueOrDefault("Total"), out _))
+                                {
+                                    <progress class="w-100" value="@drive.GetValueOrDefault("Used")" max="@drive.GetValueOrDefault("Total")"></progress>
+                                }
                             </p>
                         </div>
                     </div>

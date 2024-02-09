@@ -54,7 +54,7 @@ public class BackupController: ControllerBase
             return StatusCode(500, "Could not connect to database");
         }
         
-        var service = Parameters.Type?.GetService(configuration)?.ForServer(server);
+        var service = Parameters.Type?.GetService()?.ForServer(server);
 
         var backup = await service!.BackupDatabase(backupRequest.Databases);
         
