@@ -121,51 +121,44 @@ public class HangfireService(
     public async Task<string> CompressFileIfNeeded()
     {
         var dayBeforeCompression = TimeSpan.FromDays(Configuration.GetValue<int>(Constants.DayBeforeCompressionName));
-        var backupRoot = Configuration.GetValue<string>(Core.Constants.BackupPathAppSettingName);
+        var compressDay = DateTime.UtcNow - dayBeforeCompression;
         
-        var files = Directory.GetFiles(backupRoot, "*.*", new EnumerationOptions
-        {
-            RecurseSubdirectories = true,
-            MaxRecursionDepth = 3,
-            ReturnSpecialDirectories = false,
-            AttributesToSkip = FileAttributes.System
-        });
+        var backupsToCompress = await DbContext.Backups
+            .Where(b => b.BackupDate < compressDay)
+            .ToArrayAsync();
         
-        files = files.Where(f => Constants.AllBackupsFileExtensions.Contains(Path.GetExtension(f)[1..])).ToArray();
+        backupsToCompress = backupsToCompress
+            .Where(b => !b.Compressed)
+            .ToArray();
 
         var listOdRes = new List<string>();
 
-        foreach (var file in files)
+        foreach (var backup in backupsToCompress)
         {
-            var originalFileName = Path.GetFileNameWithoutExtension(file);
-            var fileNameParts = originalFileName.Split('_');
+            var compressedFileName = $"{backup.FileName}.zip";
             
-            if(fileNameParts.Length < 2)
+            var tempFile = await StorageService.Get(backup.Path);
+            
+            if (tempFile is null)
                 continue;
             
-            var fileDate = DateTime.ParseExact(fileNameParts.Last(), "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
-            
-            if(DateTime.UtcNow - fileDate < dayBeforeCompression)
-                continue;
-            
-            var compressedFileName = Path.Combine(Path.GetDirectoryName(file)!, $"{originalFileName}.zip");
-            
-            if (File.Exists(Path.Combine(backupRoot, compressedFileName)))
-                continue;
-            
-            using var zipFile = ZipFile.Open(Path.Combine(backupRoot, compressedFileName), ZipArchiveMode.Create);
-            zipFile.CreateEntryFromFile(file, Path.GetFileName(file));
-            
-            File.Delete(file);
-            
-            listOdRes.Add($"backup {originalFileName} compressed => {compressedFileName}");
+            compressedFileName = Path.GetDirectoryName(tempFile.FullName) + compressedFileName;
 
-            var backup = await DbContext.Backups.FirstOrDefaultAsync(b => b.Path == file);
+            using (var zipFile = ZipFile.Open(compressedFileName, ZipArchiveMode.Create))
+            {
+                zipFile.CreateEntryFromFile(tempFile.FullName, $"{Path.GetFileName(backup.Path)}");
+            }
             
-            if (backup is null)
-                continue;
+            var compressedSize = new FileInfo(compressedFileName).Length;
             
-            backup.Path = compressedFileName;
+            tempFile.Delete();
+            await StorageService.MoveTo(compressedFileName, backup.Path + ".zip");
+            await StorageService.Delete(backup.Path);
+            
+            backup.Path += ".zip";
+            backup.Size = compressedSize;
+            
+            listOdRes.Add($"backup {backup.Path} compressed => {compressedFileName}");
         }
         
         await DbContext.SaveChangesAsync();

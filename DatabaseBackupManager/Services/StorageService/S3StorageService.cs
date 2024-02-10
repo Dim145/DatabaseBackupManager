@@ -11,7 +11,7 @@ using static DatabaseBackupManager.Data.Seeds;
 
 namespace DatabaseBackupManager.Services.StorageService;
 
-public class S3StorageService(IMinioClient minioClient) : IStorageService, IDisposable
+public class S3StorageService(IMinioClient minioClient) : IStorageService
 {
     private IMinioClient MinioClient { get; } = minioClient;
 
@@ -20,7 +20,15 @@ public class S3StorageService(IMinioClient minioClient) : IStorageService, IDisp
     public async Task<bool> MoveTo(string pathFrom, string pathTo)
     {
         if (!File.Exists(pathFrom))
-            throw new Exception($"File {pathFrom} does not exist");
+        {
+            var getFileInfo = await Get(pathFrom);
+            
+            File.Move(getFileInfo.FullName, pathTo);
+            
+            await Delete(pathFrom);
+            
+            return true;
+        }
 
         var putObjectArgs = new PutObjectArgs()
             .WithBucket(StorageSettings.S3Bucket)
@@ -159,9 +167,9 @@ public class S3StorageService(IMinioClient minioClient) : IStorageService, IDisp
         return objectStats.Size;
     }
     
-    public void Dispose()
+    // override finalizer only if 'Dispose' method is not implemented
+    ~S3StorageService()
     {
         TempPath.Delete(true);
-        GC.SuppressFinalize(this);
     }
 }
