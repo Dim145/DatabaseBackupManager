@@ -60,17 +60,14 @@ internal static class Seeds
             S3Region = Environment.GetEnvironmentVariable("StorageSettings__S3Region"),
             S3LinkExpiration = int.TryParse(Environment.GetEnvironmentVariable("StorageSettings__S3LinkExpiration"), out var expiration) ? expiration : 60,
         };
-        
-        DatabaseType = parameters.GetValue<DatabaseType?>("DatabaseType") ?? Environment.GetEnvironmentVariable("DatabaseType") switch
-        {
-            "Postgres" => DatabaseType.Postgres,
-            _ => DatabaseType.Sqlite
-        };
+
+        DatabaseType = Enum.TryParse<DatabaseType>(Environment.GetEnvironmentVariable("DatabaseType"), out var dbType) ? dbType : parameters.GetValue<DatabaseType?>("DatabaseType") ?? DatabaseType.Sqlite;
 
         DatabaseConnectionString = Environment.GetEnvironmentVariable("DefaultConnection") ??
                                    parameters.GetConnectionString("DefaultConnection");
         HangfireConnectionString = Environment.GetEnvironmentVariable("HangfireDb") ??
-                                  parameters.GetConnectionString("Hangfire");
+                                   parameters.GetConnectionString("Hangfire") ??
+                                   DatabaseConnectionString;
     }
     
     internal static async Task SeedDatabase(this IServiceProvider services)
