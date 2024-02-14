@@ -20,7 +20,7 @@ public abstract class DatabaseBackup
 
     protected string GetPathForBackup(string databaseName, string extension = "sql")
     {
-        var date = DateTime.Now;
+        var date = DateTime.UtcNow;
         var filename = $"{databaseName.Replace(" ", "-")}_{date:yyyyMMddHHmmss}.{extension}";
         var path = Path.Combine(Constants.TempDirForBackups, Server.Type.ToString(), Server.Name.Replace(" ", "_"));
         

@@ -30,7 +30,7 @@ public class PostgresBackupService: DatabaseBackup
 
         return new Backup
         {
-            BackupDate = DateTime.Now,
+            BackupDate = DateTime.UtcNow,
             Path = path,
         };
     }

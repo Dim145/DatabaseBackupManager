@@ -34,7 +34,7 @@ public class SqliteBackupService: DatabaseBackup
         
         return new Backup
         {
-            BackupDate = DateTime.Now,
+            BackupDate = DateTime.UtcNow,
             Path = path,
         };
     }

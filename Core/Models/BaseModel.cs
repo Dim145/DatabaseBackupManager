@@ -6,8 +6,8 @@ public abstract class BaseModel
 {
     protected BaseModel()
     {
-        CreatedAt = DateTime.Now;
-        UpdatedAt = DateTime.Now;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
     }
     
     [Key]

@@ -125,7 +125,7 @@ public abstract class BaseContext: IdentityDbContext
             .Cast<BaseModel>();
         
         foreach (var entity in entities)
-            entity.UpdatedAt = DateTime.Now;
+            entity.UpdatedAt = DateTime.UtcNow;
     }
 
     private void SynchronizeBackupWithFiles()

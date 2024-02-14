@@ -34,7 +34,7 @@ public class MySqlBackupService: DatabaseBackup
 
         return new Backup
         {
-            BackupDate = DateTime.Now,
+            BackupDate = DateTime.UtcNow,
             Path = path,
         };
     }
