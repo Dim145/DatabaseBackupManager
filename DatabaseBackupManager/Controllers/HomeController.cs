@@ -11,12 +11,12 @@ namespace DatabaseBackupManager.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
-    private ApplicationDbContext DbContext { get; }
+    private BaseContext DbContext { get; }
 
     public HomeController(ILogger<HomeController> logger, IServiceProvider serviceProvider)
     {
         _logger = logger;
-        DbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
+        DbContext = serviceProvider.GetRequiredService<BaseContext>();
     }
 
     public IActionResult Index()

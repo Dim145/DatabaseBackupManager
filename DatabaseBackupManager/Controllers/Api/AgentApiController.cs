@@ -8,9 +8,9 @@ namespace DatabaseBackupManager.Controllers.Api;
 [ApiController]
 public class AgentApiController: ControllerBase
 {
-    private ApplicationDbContext DbContext { get; }
+    private BaseContext DbContext { get; }
     
-    public AgentApiController(ApplicationDbContext dbContext)
+    public AgentApiController(BaseContext dbContext)
     {
         DbContext = dbContext;
     }

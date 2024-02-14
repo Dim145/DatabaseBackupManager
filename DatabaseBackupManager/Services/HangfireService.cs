@@ -11,11 +11,11 @@ using Microsoft.IdentityModel.Tokens;
 namespace DatabaseBackupManager.Services;
 
 public class HangfireService(
-    ApplicationDbContext dbContext,
+    BaseContext dbContext,
     IConfiguration configuration,
     IStorageService storageService)
 {
-    private ApplicationDbContext DbContext { get; } = dbContext;
+    private BaseContext DbContext { get; } = dbContext;
     private IConfiguration Configuration { get; } = configuration;
     private IStorageService StorageService { get; } = storageService;
 
@@ -169,7 +169,7 @@ public class HangfireService(
         return string.Join("\n", listOdRes);
     }
 
-    public static async Task InitHangfireRecurringJob(ApplicationDbContext dbContext, IConfiguration conf)
+    public static async Task InitHangfireRecurringJob(BaseContext dbContext, IConfiguration conf)
     {
         var hangfire = new HangfireService(null, null, null);
         var jobs = await dbContext.BackupJobs.Where(b => b.Enabled).ToArrayAsync();

@@ -5,7 +5,7 @@ namespace DatabaseBackupManager.Services;
 
 public class FileWatcherService: BackgroundService
 {
-    private ApplicationDbContext DbContext { get; }
+    private BaseContext DbContext { get; }
     private IConfiguration Configuration { get; }
     private IServiceScope ServiceScope { get; }
     private FileSystemWatcher Watcher { get; }
@@ -17,7 +17,7 @@ public class FileWatcherService: BackgroundService
     {
         ServiceScope = provider.CreateScope();
         
-        DbContext = ServiceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        DbContext = ServiceScope.ServiceProvider.GetRequiredService<BaseContext>();
         Configuration = ServiceScope.ServiceProvider.GetRequiredService<IConfiguration>();
         
         Watcher = new FileSystemWatcher(Configuration.GetValue<string>(Core.Constants.BackupPathAppSettingName))

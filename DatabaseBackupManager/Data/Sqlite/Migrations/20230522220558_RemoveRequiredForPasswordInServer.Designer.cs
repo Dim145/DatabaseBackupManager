@@ -10,9 +10,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DatabaseBackupManager.Data.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230517224758_AddRetentionCol")]
-    partial class AddRetentionCol
+    [DbContext(typeof(BaseContext))]
+    [Migration("20230522220558_RemoveRequiredForPasswordInServer")]
+    partial class RemoveRequiredForPasswordInServer
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -106,7 +106,6 @@ namespace DatabaseBackupManager.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Password")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Port")

@@ -13,10 +13,10 @@ namespace DatabaseBackupManager.Controllers;
 
 [Route("backups")]
 [Authorize(Policy = nameof(Policies.ReaderRolePolicy))]
-public class BackupController(ApplicationDbContext dbContext, IStorageService storageService)
+public class BackupController(BaseContext dbContext, IStorageService storageService)
     : Controller
 {
-    private ApplicationDbContext DbContext { get; } = dbContext;
+    private BaseContext DbContext { get; } = dbContext;
     private IStorageService StorageService { get; } = storageService;
 
 

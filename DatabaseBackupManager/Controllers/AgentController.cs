@@ -11,9 +11,9 @@ namespace DatabaseBackupManager.Controllers;
 [Authorize(Policy = nameof(Policies.AdminRolePolicy))]
 public class AgentController: Controller
 {
-    private ApplicationDbContext DbContext { get; }
+    private BaseContext DbContext { get; }
     
-    public AgentController(ApplicationDbContext dbContext)
+    public AgentController(BaseContext dbContext)
     {
         DbContext = dbContext;
     }

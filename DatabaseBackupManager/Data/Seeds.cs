@@ -4,11 +4,20 @@ using Minio.DataModel.Encryption;
 
 namespace DatabaseBackupManager.Data;
 
+internal enum DatabaseType
+{
+    Postgres,
+    Sqlite
+}
+
 internal static class Seeds
 {
     internal static MailSettings MailSettings { get; private set; }
     internal static DataSettings DataSettings { get; private set; }
     internal static StorageSettings StorageSettings { get; private set; }
+    internal static DatabaseType DatabaseType { get; private set; }
+    internal static string DatabaseConnectionString { get; private set; }
+    internal static string HangfireConnectionString { get; private set; }
 
     internal static void InitSettingsVars(this IConfiguration parameters)
     {
@@ -51,6 +60,17 @@ internal static class Seeds
             S3Region = Environment.GetEnvironmentVariable("StorageSettings__S3Region"),
             S3LinkExpiration = int.TryParse(Environment.GetEnvironmentVariable("StorageSettings__S3LinkExpiration"), out var expiration) ? expiration : 60,
         };
+        
+        DatabaseType = parameters.GetValue<DatabaseType?>("DatabaseType") ?? Environment.GetEnvironmentVariable("DatabaseType") switch
+        {
+            "Postgres" => DatabaseType.Postgres,
+            _ => DatabaseType.Sqlite
+        };
+
+        DatabaseConnectionString = Environment.GetEnvironmentVariable("DefaultConnection") ??
+                                   parameters.GetConnectionString("DefaultConnection");
+        HangfireConnectionString = Environment.GetEnvironmentVariable("HangfireDb") ??
+                                  parameters.GetConnectionString("Hangfire");
     }
     
     internal static async Task SeedDatabase(this IServiceProvider services)

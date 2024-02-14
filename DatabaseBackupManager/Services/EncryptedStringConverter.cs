@@ -86,18 +86,27 @@ internal static class EncryptedStringConverter
 
     internal static string GetKey(IConfiguration conf)
     {
-        var hangfirePath = conf.GetValue<string>("HangfireDbPath") ?? "/";
-        var rep = Path.GetDirectoryName(hangfirePath) ?? "/";
-        var keyFile = Path.Combine(rep, "key.txt");
+        var key = Environment.GetEnvironmentVariable("password_secret_key");
 
-        if (File.Exists(keyFile)) 
-            return File.ReadAllText(keyFile);
+        if (!string.IsNullOrWhiteSpace(key))
+            return key;
         
-        var key = GenerateKey();
-        File.WriteAllText(keyFile, key);
+        key = GenerateKey();
+        
+        Console.WriteLine($"\n\n\n\nYour key is '{key}' please save it in a safe place and set it in the environment variable password_secret_key\n\n\n\n\n");
             
+        try
+        {
+            Environment.SetEnvironmentVariable("password_secret_key", key);
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine(e);
+            
+            conf["password_secret_key"] = key;
+        }
+        
         return key;
-
     }
 
     /// <summary>

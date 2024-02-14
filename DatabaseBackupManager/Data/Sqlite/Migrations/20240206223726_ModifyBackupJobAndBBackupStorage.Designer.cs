@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DatabaseBackupManager.Data.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(BaseContext))]
     [Migration("20240206223726_ModifyBackupJobAndBBackupStorage")]
     partial class ModifyBackupJobAndBBackupStorage
     {

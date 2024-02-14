@@ -11,9 +11,9 @@ namespace DatabaseBackupManager.Controllers;
 [Authorize(Policy = nameof(Policies.ReaderRolePolicy))]
 public class BackupJobController: Controller
 {
-    private ApplicationDbContext DbContext { get; }
+    private BaseContext DbContext { get; }
     
-    public BackupJobController(ApplicationDbContext dbContext)
+    public BackupJobController(BaseContext dbContext)
     {
         DbContext = dbContext;
     }

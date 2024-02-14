@@ -10,9 +10,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DatabaseBackupManager.Data.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230511194627_AddInitialBackupTables")]
-    partial class AddInitialBackupTables
+    [DbContext(typeof(BaseContext))]
+    [Migration("20230517224758_AddRetentionCol")]
+    partial class AddRetentionCol
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -64,13 +64,15 @@ namespace DatabaseBackupManager.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DatabaseNames")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("Enabled")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<TimeSpan>("Retention")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ServerId")
@@ -96,6 +98,7 @@ namespace DatabaseBackupManager.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Host")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -103,6 +106,7 @@ namespace DatabaseBackupManager.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Password")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Port")
@@ -115,6 +119,7 @@ namespace DatabaseBackupManager.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("User")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

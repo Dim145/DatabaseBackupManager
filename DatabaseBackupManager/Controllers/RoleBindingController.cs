@@ -13,14 +13,14 @@ public class RoleBindingController: Controller
 {
     private RoleManager<IdentityRole> RoleManager { get; }
     private UserManager<IdentityUser> UserManager { get; }
-    private ApplicationDbContext DbContext { get; }
+    private BaseContext DbContext { get; }
     private SignInManager<IdentityUser> SignInManager { get; }
     
 
     public RoleBindingController(
         RoleManager<IdentityRole> roleManager, 
         UserManager<IdentityUser> userManager, 
-        ApplicationDbContext dbContext,
+        BaseContext dbContext,
         SignInManager<IdentityUser> signInManager
         )
     {

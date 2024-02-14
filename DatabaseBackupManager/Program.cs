@@ -6,10 +6,13 @@ using DatabaseBackupManager.Authorizations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DatabaseBackupManager.Data;
+using DatabaseBackupManager.Data.Postgres;
+using DatabaseBackupManager.Data.Sqlite;
 using DatabaseBackupManager.Middleware;
 using DatabaseBackupManager.Services;
 using DatabaseBackupManager.Services.StorageService;
 using Hangfire;
+using Hangfire.PostgreSql;
 using Hangfire.Storage.SQLite;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Minio;
@@ -40,20 +43,52 @@ switch (Seeds.StorageSettings.StorageType)
         break;
 }
 
-// Add services to the container.
-var dataConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-var hangfireDbPath = builder.Configuration.GetValue<string>("HangfireDbPath") ?? Environment.GetEnvironmentVariable("HangfireDbPath") ?? "hangfire.db";
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(dataConnectionString));
+void getOptions(DbContextOptionsBuilder options)
+{
+    switch (Seeds.DatabaseType)
+    {
+        case DatabaseType.Postgres:
+            options.UseNpgsql(Seeds.DatabaseConnectionString);
+            break;
+        default:
+            options.UseSqlite(Seeds.DatabaseConnectionString);
+            break;
+    }
+}
+
+switch (Seeds.DatabaseType)
+{
+    case DatabaseType.Postgres:
+        builder.Services.AddDbContext<BaseContext, PostgresContext>(getOptions);
+        break;
+    default:
+        builder.Services.AddDbContext<BaseContext, SqliteContext>(getOptions);
+        break;
+}
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddHangfire(config => 
-    config.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-        .UseSimpleAssemblyNameTypeSerializer()
-        .UseSQLiteStorage(hangfireDbPath)
-        .UseRecommendedSerializerSettings()
-    );
+builder.Services.AddHangfire(config =>
+{
+    config.SetDataCompatibilityLevel(CompatibilityLevel.Version_170);
+    config.UseSimpleAssemblyNameTypeSerializer();
+
+    switch (Seeds.DatabaseType)
+    {
+        case DatabaseType.Postgres:
+            config.UsePostgreSqlStorage(options =>
+            {
+                options.UseNpgsqlConnection(Seeds.HangfireConnectionString);
+            });
+            break;
+        default:
+            config.UseSQLiteStorage(Seeds.HangfireConnectionString);
+            break;
+    }
+    
+    config.UseRecommendedSerializerSettings();
+});
 
 builder.Services.AddHangfireServer();
 
@@ -63,7 +98,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
         options.SignIn.RequireConfirmedEmail = !string.IsNullOrWhiteSpace(Seeds.MailSettings.Host);
     })
     .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddEntityFrameworkStores<BaseContext>();
 
 builder.Services.AddAuthorization(options =>
 {
@@ -148,7 +183,7 @@ app.UseMiddleware<LogoutMiddleware>();
 // Run migrations
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
-var context = services.GetRequiredService<ApplicationDbContext>();
+var context = services.GetRequiredService<BaseContext>();
 context.Database.Migrate();
 
 await services.SeedDatabase();

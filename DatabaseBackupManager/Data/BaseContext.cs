@@ -1,15 +1,16 @@
-﻿using Core.Models;
+using Core.Models;
 using DatabaseBackupManager.Models;
 using DatabaseBackupManager.Services;
 using DatabaseBackupManager.Services.StorageService;
 using Hangfire;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+
 using static DatabaseBackupManager.Constants;
 
 namespace DatabaseBackupManager.Data;
 
-public class ApplicationDbContext : IdentityDbContext
+public abstract class BaseContext: IdentityDbContext 
 {
     public virtual DbSet<Server> Servers { get; set; }
     public virtual DbSet<BackupJob> BackupJobs { get; set; }
@@ -25,7 +26,7 @@ public class ApplicationDbContext : IdentityDbContext
     
     private IStorageService StorageService { get; }
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IConfiguration conf, IStorageService storageService)
+    protected BaseContext(DbContextOptions options, IConfiguration conf, IStorageService storageService)
         : base(options)
     {
         StorageService = storageService;

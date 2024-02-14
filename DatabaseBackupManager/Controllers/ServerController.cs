@@ -12,9 +12,9 @@ namespace DatabaseBackupManager.Controllers;
 [Authorize(Policy = nameof(Policies.AdminRolePolicy))]
 public class ServerController: Controller
 {
-    private ApplicationDbContext DbContext { get; }
+    private BaseContext DbContext { get; }
     
-    public ServerController(ApplicationDbContext dbContext)
+    public ServerController(BaseContext dbContext)
     {
         DbContext = dbContext;
     }
