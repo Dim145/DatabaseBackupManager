@@ -85,53 +85,8 @@ public class SqlServerBackupService: DatabaseBackup
         };
     }
 
-    public override async Task<bool> RestoreDatabase(Backup backup, CancellationToken cancellationToken = default)
+    public override Task<bool> RestoreDatabase(Backup backup, CancellationToken cancellationToken = default)
     {
         throw new Exception("restoring database is not supported for sql server"); // todo: search for solution ?
-        if (Server is null)
-            return false;
-        
-        var path = GetPathOrUncompressedPath(backup);
-        
-        var filesParts = Path.GetFileNameWithoutExtension(path)?.Split('_') ?? Array.Empty<string>();
-        var databaseName = string.Join("_", filesParts.SkipLast(1));
-        
-        if (string.IsNullOrEmpty(databaseName))
-            return false;
-        
-        var dbConnection = Server.GetConnection();
-        
-        await dbConnection.OpenAsync(cancellationToken);
-        
-        var command = dbConnection.CreateCommand();
-        
-        // create temp table to store backup file
-        command.CommandText = $"CREATE TABLE #temp_{databaseName} (BackupFile VARBINARY(MAX))";
-        await command.ExecuteNonQueryAsync(cancellationToken);
-        
-        try
-        {
-            var fileStream = new FileStream(path, FileMode.Open);
-            var backupFile = new byte[fileStream.Length];
-            await fileStream.ReadAsync(backupFile, 0, (int) fileStream.Length, cancellationToken);
-            fileStream.Close();
-            
-            // upload backup file into temp table
-            command.CommandText = $"INSERT INTO #temp_{databaseName} (BackupFile) VALUES (@BackupFile)";
-            command.Parameters.Add(new SqlParameter("@BackupFile", SqlDbType.VarBinary, backupFile.Length) {Value = backupFile});
-            await command.ExecuteNonQueryAsync(cancellationToken);
-
-            // restore database from temp table
-            command.CommandText = $"RESTORE DATABASE [{databaseName}] FROM DISK = (SELECT BackupFile FROM #temp_{databaseName})";
-            await command.ExecuteNonQueryAsync(cancellationToken);
-        }
-        finally
-        {
-            // drop temp table
-            command.CommandText = $"DROP TABLE #temp_{databaseName}";
-            await command.ExecuteNonQueryAsync(cancellationToken);
-        }
-
-        return true;
     }
 }
