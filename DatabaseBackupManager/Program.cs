@@ -38,6 +38,9 @@ switch (Seeds.StorageSettings.StorageType)
         
         builder.Services.AddScoped<IStorageService, S3StorageService>();
         break;
+    case "AWS3":
+        builder.Services.AddScoped<IStorageService, AmazonS3Storage>();
+        break;
     default:
         builder.Services.AddScoped<IStorageService, LocalStorageService>();
         break;
