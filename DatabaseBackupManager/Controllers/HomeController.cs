@@ -23,19 +23,7 @@ public class HomeController : Controller
     {
         switch (Seeds.StorageSettings.StorageType)
         {
-            case "S3":
-                ViewBag.Drives = new Dictionary<string, string>[]
-                {
-                    new()
-                    {
-                        { "Name", Seeds.StorageSettings.S3Bucket },
-                        { "Info", "" },
-                        { "Total", "Unlimited" },
-                        { "Used", DbContext.Backups.Sum(b => b.Size).ToString() }
-                    }
-                };
-                break;
-            default:
+            case "Local":
                 ViewBag.Drives = DriveInfo.GetDrives()
                     .Where(d => Directory.Exists(d.VolumeLabel) || Directory.Exists(d.Name))
                     .Where(d =>
@@ -61,6 +49,18 @@ public class HomeController : Controller
                         { "Used", (d.TotalSize - d.AvailableFreeSpace).ToString() }
                     })
                     .ToArray();
+                break;
+            default:
+                ViewBag.Drives = new Dictionary<string, string>[]
+                {
+                    new()
+                    {
+                        { "Name", Seeds.StorageSettings.S3Bucket },
+                        { "Info", "" },
+                        { "Total", "Unlimited" },
+                        { "Used", DbContext.Backups.Sum(b => b.Size).ToString() }
+                    }
+                };
                 break;
         }
         
