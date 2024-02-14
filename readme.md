@@ -38,8 +38,13 @@
 - StorageSettings__S3LinkExpiration
 
 #### Local
-Use backup path  in appssettings.json
+Use backup path in appssettings.json
 
+### Encryption
+- password_secret_key
+
+You can specify the Aes key in base64 to encrypt the password in the database. If not specified, one will be generated at the first start of the application and print into the logs.  
+WARNING: If you do not save the key in env vars, you will not be able to decrypt the password of servers in the database.
 
 ### Information's
 All env var can be replaced with value with  appsettings.json.  
