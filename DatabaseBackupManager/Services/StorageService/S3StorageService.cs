@@ -35,7 +35,7 @@ public class S3StorageService(IMinioClient minioClient) : IStorageService
             .WithObject(pathTo)
             .WithFileName(pathFrom)
             // database backup content type
-            .WithContentType("application/x-sql");
+            .WithContentType(Environment.GetEnvironmentVariable("StorageSettings__ContentType") ?? "application/x-sql");
         
         if(StorageSettings.ServerSideEncryption != null)
             putObjectArgs.WithServerSideEncryption(StorageSettings.ServerSideEncryption);
