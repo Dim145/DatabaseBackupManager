@@ -17,12 +17,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           
-      - name: set lower case owner name
-        run: |
-          echo "REPOSITORY_LC=${REPOSITORY,,}" >>${GITHUB_ENV}
-        env:
-          REPOSITORY: '${{ github.repository }}'
-          
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -31,6 +25,6 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ env.REPOSITORY_LC }}:latest
-            ${{ env.REPOSITORY_LC }}:${{ github.ref_name }}
+            dim145/backup-manager:latest
+            dim145/backup-manager:${{ github.ref_name }}
           
