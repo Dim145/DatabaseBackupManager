@@ -17,7 +17,7 @@ public class BackupController: ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Backup([FromBody] BackupRequest  backupRequest, [FromServices] IConfiguration configuration)
+    public async Task<IActionResult> Backup([FromBody] BackupRequest  backupRequest)
     {
         if(backupRequest.Token != Parameters.Token)
             return Unauthorized();
