@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Mail;
 using System.Reflection;
+using Azure.Storage;
 using Core.Services;
 using DatabaseBackupManager.Authorizations;
 using Microsoft.AspNetCore.Identity;
@@ -15,6 +16,7 @@ using Hangfire;
 using Hangfire.PostgreSql;
 using Hangfire.Storage.SQLite;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.Extensions.Azure;
 using Minio;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,11 +43,13 @@ switch (Seeds.StorageSettings.StorageType)
     case "AWS3":
         builder.Services.AddScoped<IStorageService, AmazonS3Storage>();
         break;
+    case "Azure":
+        builder.Services.AddScoped<IStorageService, AzureStorageService>();
+        break;
     default:
         builder.Services.AddScoped<IStorageService, LocalStorageService>();
         break;
 }
-
 
 void getOptions(DbContextOptionsBuilder options)
 {
