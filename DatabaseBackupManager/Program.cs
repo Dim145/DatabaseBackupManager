@@ -12,11 +12,12 @@ using DatabaseBackupManager.Data.Sqlite;
 using DatabaseBackupManager.Middleware;
 using DatabaseBackupManager.Services;
 using DatabaseBackupManager.Services.StorageService;
+using EasyCaching.Core.Configurations;
+using EFCoreSecondLevelCacheInterceptor;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Hangfire.Storage.SQLite;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.Azure;
 using Minio;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -51,7 +52,9 @@ switch (Seeds.StorageSettings.StorageType)
         break;
 }
 
-void getOptions(DbContextOptionsBuilder options)
+var hasRedis = !string.IsNullOrWhiteSpace(Seeds.RedisSettings.Host) && Seeds.RedisSettings.Port > 0;
+
+void getOptions(IServiceProvider sp, DbContextOptionsBuilder options)
 {
     switch (Seeds.DatabaseType)
     {
@@ -61,6 +64,11 @@ void getOptions(DbContextOptionsBuilder options)
         default:
             options.UseSqlite(Seeds.DatabaseConnectionString);
             break;
+    }
+
+    if (hasRedis)
+    {
+        options.AddInterceptors(sp.GetRequiredService<SecondLevelCacheInterceptor>());
     }
 }
 
@@ -73,6 +81,28 @@ switch (Seeds.DatabaseType)
         builder.Services.AddDbContext<BaseContext, SqliteContext>(getOptions);
         break;
 }
+
+if (hasRedis)
+{
+    builder.Services.AddEasyCaching(options =>
+    {
+        options.UseRedis(config =>
+        {
+            config.SerializerName = "json";
+            config.DBConfig.Database = Seeds.RedisSettings.Database;
+            config.DBConfig.Endpoints.Add(new ServerEndPoint(Seeds.RedisSettings.Host, Seeds.RedisSettings.Port));
+            config.DBConfig.Password = Seeds.RedisSettings.Password;
+            config.DBConfig.IsSsl = Seeds.RedisSettings.Ssl;
+        }, "backup-manager-redis-pack");
+    });
+
+    builder.Services.AddEFSecondLevelCache(options =>
+    {
+        options.UseEasyCachingCoreProvider("backup-manager-redis-pack");
+        options.CacheAllQueries(CacheExpirationMode.Sliding, TimeSpan.FromMinutes(Seeds.RedisSettings.CacheExpiration));
+        options.UseDbCallsIfCachingProviderIsDown(TimeSpan.FromSeconds(Seeds.RedisSettings.Timeout));
+    });
+} 
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

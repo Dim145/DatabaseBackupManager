@@ -18,6 +18,7 @@ internal static class Seeds
     internal static DatabaseType DatabaseType { get; private set; }
     internal static string DatabaseConnectionString { get; private set; }
     internal static string HangfireConnectionString { get; private set; }
+    internal static RedisSettings RedisSettings { get; private set; }
 
     internal static void InitSettingsVars(this IConfiguration parameters)
     {
@@ -59,6 +60,17 @@ internal static class Seeds
             S3UseSSL = bool.TryParse(Environment.GetEnvironmentVariable("StorageSettings__S3UseSSL"), out var s3UseSSL) && s3UseSSL,
             S3Region = Environment.GetEnvironmentVariable("StorageSettings__S3Region"),
             S3LinkExpiration = int.TryParse(Environment.GetEnvironmentVariable("StorageSettings__S3LinkExpiration"), out var expiration) ? expiration : 60,
+        };
+
+        RedisSettings = new RedisSettings
+        {
+            Host = Environment.GetEnvironmentVariable("RedisSettings__Host"),
+            Port = int.TryParse(Environment.GetEnvironmentVariable("RedisSettings__Port"), out var rport) ? rport : 6379,
+            Password = Environment.GetEnvironmentVariable("RedisSettings__Password"),
+            Database = int.TryParse(Environment.GetEnvironmentVariable("RedisSettings__Database"), out var db) ? db : 0,
+            Ssl = bool.TryParse(Environment.GetEnvironmentVariable("RedisSettings__Ssl"), out var ssl) && ssl,
+            CacheExpiration = int.TryParse(Environment.GetEnvironmentVariable("RedisSettings__CacheExpiration"), out var cacheExpiration) ? cacheExpiration : 60,
+            Timeout = int.TryParse(Environment.GetEnvironmentVariable("RedisSettings__Timeout"), out var timeout) ? timeout : 30
         };
 
         DatabaseType = Enum.TryParse<DatabaseType>(Environment.GetEnvironmentVariable("DatabaseType"), out var dbType) ? dbType : parameters.GetValue<DatabaseType?>("DatabaseType") ?? DatabaseType.Sqlite;
