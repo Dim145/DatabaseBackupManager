@@ -88,12 +88,12 @@ if (hasRedis)
     {
         options.UseRedis(config =>
         {
-            config.SerializerName = "json";
             config.DBConfig.Database = Seeds.RedisSettings.Database;
             config.DBConfig.Endpoints.Add(new ServerEndPoint(Seeds.RedisSettings.Host, Seeds.RedisSettings.Port));
             config.DBConfig.Password = Seeds.RedisSettings.Password;
             config.DBConfig.IsSsl = Seeds.RedisSettings.Ssl;
-        }, "backup-manager-redis-pack");
+        }, "backup-manager-redis-pack")
+        .WithJson();
     });
 
     builder.Services.AddEFSecondLevelCache(options =>
