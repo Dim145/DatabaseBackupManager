@@ -3,6 +3,7 @@ using System.Net.Mail;
 using System.Reflection;
 using Azure.Storage;
 using Core.Services;
+using DatabaseBackupManager;
 using DatabaseBackupManager.Authorizations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -84,6 +85,14 @@ switch (Seeds.DatabaseType)
 
 if (hasRedis)
 {
+    builder.Services.AddEFSecondLevelCache(options =>
+    {
+        options.ConfigureLogging(true, tuple => Console.WriteLine(tuple.Item2));
+        options.UseEasyCachingCoreProvider(Constants.RedisCachingName);
+        options.CacheAllQueries(CacheExpirationMode.Sliding, TimeSpan.FromMinutes(Seeds.RedisSettings.CacheExpiration));
+        options.UseDbCallsIfCachingProviderIsDown(TimeSpan.FromSeconds(Seeds.RedisSettings.Timeout));
+    });
+    
     builder.Services.AddEasyCaching(options =>
     {
         options.UseRedis(config =>
@@ -92,15 +101,9 @@ if (hasRedis)
             config.DBConfig.Endpoints.Add(new ServerEndPoint(Seeds.RedisSettings.Host, Seeds.RedisSettings.Port));
             config.DBConfig.Password = Seeds.RedisSettings.Password;
             config.DBConfig.IsSsl = Seeds.RedisSettings.Ssl;
-        }, "backup-manager-redis-pack")
-        .WithJson();
-    });
-
-    builder.Services.AddEFSecondLevelCache(options =>
-    {
-        options.UseEasyCachingCoreProvider("backup-manager-redis-pack");
-        options.CacheAllQueries(CacheExpirationMode.Sliding, TimeSpan.FromMinutes(Seeds.RedisSettings.CacheExpiration));
-        options.UseDbCallsIfCachingProviderIsDown(TimeSpan.FromSeconds(Seeds.RedisSettings.Timeout));
+            config.SerializerName = Constants.RedisCachingName;
+        }, Constants.RedisCachingName)
+        .WithJson(Constants.RedisCachingName);
     });
 } 
 
@@ -147,7 +150,6 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddScoped<PostgresBackupService>();
 builder.Services.AddScoped<HangfireService>();
 builder.Services.AddScoped<LogoutMiddleware>();
 

@@ -16,6 +16,8 @@ public static class Constants
 
     public const string DefaultValueForSqliteColumns = "sqlite_default";
 
+    public const string RedisCachingName = "BackupManagerRedisPack";
+
     public static readonly string[] AllBackupsFileExtensions = { Core.Constants.PostgresBackupFileExtension, Core.Constants.MySqlBackupFileExtension, Core.Constants.SqlServerBackupFileExtension, Core.Constants.SqliteBackupFileExtension };
 
     internal static void AddOrUpdateHangfireJob(BackupJob backupJob)
