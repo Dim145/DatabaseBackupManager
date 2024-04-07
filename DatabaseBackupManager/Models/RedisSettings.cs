@@ -8,5 +8,6 @@ public class RedisSettings
     public int Database { get; set; }
     public bool Ssl { get; set; }
     public int CacheExpiration { get; set; }
-    public int Timeout { get; set; } 
+    public int Timeout { get; set; }
+    public bool LogsEnabled { get; set; }
 }

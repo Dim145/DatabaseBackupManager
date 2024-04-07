@@ -87,7 +87,7 @@ if (hasRedis)
 {
     builder.Services.AddEFSecondLevelCache(options =>
     {
-        options.ConfigureLogging(true, tuple => Console.WriteLine(tuple.Item2));
+        options.ConfigureLogging(Seeds.RedisSettings.LogsEnabled, tuple => Console.WriteLine(tuple.Item2));
         options.UseEasyCachingCoreProvider(Constants.RedisCachingName);
         options.CacheAllQueries(CacheExpirationMode.Sliding, TimeSpan.FromMinutes(Seeds.RedisSettings.CacheExpiration));
         options.UseDbCallsIfCachingProviderIsDown(TimeSpan.FromSeconds(Seeds.RedisSettings.Timeout));

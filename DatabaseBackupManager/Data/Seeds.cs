@@ -70,7 +70,8 @@ internal static class Seeds
             Database = int.TryParse(Environment.GetEnvironmentVariable("RedisSettings__Database"), out var db) ? db : 0,
             Ssl = bool.TryParse(Environment.GetEnvironmentVariable("RedisSettings__Ssl"), out var ssl) && ssl,
             CacheExpiration = int.TryParse(Environment.GetEnvironmentVariable("RedisSettings__CacheExpiration"), out var cacheExpiration) ? cacheExpiration : 60,
-            Timeout = int.TryParse(Environment.GetEnvironmentVariable("RedisSettings__Timeout"), out var timeout) ? timeout : 30
+            Timeout = int.TryParse(Environment.GetEnvironmentVariable("RedisSettings__Timeout"), out var timeout) ? timeout : 30,
+            LogsEnabled = bool.TryParse(Environment.GetEnvironmentVariable("RedisSettings__LogsEnabled"), out var logsEnabled) && logsEnabled,
         };
 
         DatabaseType = Enum.TryParse<DatabaseType>(Environment.GetEnvironmentVariable("DatabaseType"), out var dbType) ? dbType : parameters.GetValue<DatabaseType?>("DatabaseType") ?? DatabaseType.Sqlite;
