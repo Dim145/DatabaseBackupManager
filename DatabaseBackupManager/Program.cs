@@ -97,6 +97,7 @@ if (hasRedis)
     {
         options.UseRedis(config =>
         {
+            config.DBConfig.KeyPrefix = Seeds.RedisSettings.KeyPrefix;
             config.DBConfig.Database = Seeds.RedisSettings.Database;
             config.DBConfig.Endpoints.Add(new ServerEndPoint(Seeds.RedisSettings.Host, Seeds.RedisSettings.Port));
             config.DBConfig.Password = Seeds.RedisSettings.Password;

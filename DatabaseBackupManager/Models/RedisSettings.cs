@@ -10,4 +10,5 @@ public class RedisSettings
     public int CacheExpiration { get; set; }
     public int Timeout { get; set; }
     public bool LogsEnabled { get; set; }
+    public string KeyPrefix { get; set; }
 }
