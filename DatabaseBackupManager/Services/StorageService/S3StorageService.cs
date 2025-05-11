@@ -74,14 +74,16 @@ public class S3StorageService(IMinioClient minioClient) : IStorageService
             .WithBucket(StorageSettings.S3Bucket)
             .WithPrefix(path);
         
-        var sObservable = MinioClient.ListObjectsAsync(listObjectsArgs);
+        var asyncEnumerable = MinioClient.ListObjectsEnumAsync(listObjectsArgs);
 
-        var list = await sObservable.ToList();
-
-        return list
-            .Where(i => !i.IsDir)
-            .Select(i => $"{path}/{i.Key}")
-            .ToArray();
+        // transform the async enumerable to a list of strings
+        var files = new List<string>();
+        await foreach (var item in asyncEnumerable)
+        {
+            files.Add(item.Key);
+        }
+        
+        return files.ToArray();
     }
 
     public async Task<FileInfo> Get(string path)
