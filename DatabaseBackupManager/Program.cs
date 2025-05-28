@@ -63,7 +63,7 @@ void getOptions(IServiceProvider sp, DbContextOptionsBuilder options)
             options.UseNpgsql(Seeds.DatabaseConnectionString);
             break;
         default:
-            options.UseSqlite(Seeds.DatabaseConnectionString);
+            options.UseSqlite(Seeds.DatabaseConnectionString, b => b.MigrationsAssembly("DatabaseBackupManager"));
             break;
     }
 
@@ -224,7 +224,7 @@ app.UseMiddleware<LogoutMiddleware>();
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 var context = services.GetRequiredService<BaseContext>();
-context.Database.Migrate();
+await context.Database.MigrateAsync();
 
 await services.SeedDatabase();
 await HangfireService.InitHangfireRecurringJob(context, builder.Configuration);

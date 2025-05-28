@@ -6,35 +6,35 @@
         <UserSecretsId>aspnet-DatabaseBackupManager-09FF2374-427E-4757-AD5E-F2C69C328C39</UserSecretsId>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <LangVersion>latest</LangVersion>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AWSSDK.S3" Version="4.0.0.3" />
+        <PackageReference Include="AWSSDK.S3" Version="4.0.0.7" />
         <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
-        <PackageReference Include="Cronos" Version="0.10.0" />
+        <PackageReference Include="Cronos" Version="0.11.0" />
         <PackageReference Include="EasyCaching.InMemory" Version="1.9.2" />
         <PackageReference Include="EasyCaching.Redis" Version="1.9.2" />
         <PackageReference Include="EasyCaching.Serialization.Json" Version="1.9.2" />
-        <PackageReference Include="EFCoreSecondLevelCacheInterceptor" Version="5.2.4" />
+        <PackageReference Include="EFCoreSecondLevelCacheInterceptor" Version="5.2.5" />
         <PackageReference Include="FluentEmail.Razor" Version="3.0.2" />
         <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
-        <PackageReference Include="Hangfire.AspNetCore" Version="1.8.18" />
+        <PackageReference Include="Hangfire.AspNetCore" Version="1.8.20" />
         <PackageReference Include="Hangfire.PostgreSql" Version="1.20.12" />
         <PackageReference Include="Hangfire.Storage.SQLite" Version="0.4.2" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="7.0.20" />
-        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.20" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.20" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.20" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.20">
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.16" />
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.16" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.16" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.16" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.16">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.20">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.16">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.12" />
+        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
         <PackageReference Include="Minio" Version="6.0.4" />
     </ItemGroup>
 
