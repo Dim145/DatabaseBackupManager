@@ -25,8 +25,11 @@ public static class Constants
         AddOrUpdateHangfireJob(GetJobNameForBackupJob(backupJob), backupJob.Id, backupJob.Cron);
     }
 
-    internal static void AddOrUpdateHangfireJob(string jobName, int jobId, string cron)
+    internal static void AddOrUpdateHangfireJob(string jobName, int? jobId, string cron)
     {
+        if (string.IsNullOrWhiteSpace(jobName) || jobId == null || string.IsNullOrWhiteSpace(cron))
+            throw new ArgumentException("Job name, job ID and cron expression must not be null or empty.");
+        
         HangfireService pseudoHangfireContext = new(null, null, null);
         
         RecurringJob.AddOrUpdate(jobName, () => pseudoHangfireContext.BackupDatabase(jobId), cron);
@@ -42,8 +45,12 @@ public static class Constants
         return GetJobNameForBackupJob(backupJob.Name, backupJob.Id);
     }
     
-    internal static string GetJobNameForBackupJob(string jobName, int backupJobId)
+    internal static string GetJobNameForBackupJob(string jobName, int? backupJobId)
     {
+        
+        if (string.IsNullOrWhiteSpace(jobName) || backupJobId == null)
+            throw new ArgumentException("Job name and backup job ID must not be null or empty.");
+        
         return $"BackupJob-{jobName}-{backupJobId}";
     }
 

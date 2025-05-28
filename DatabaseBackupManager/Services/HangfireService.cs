@@ -20,8 +20,11 @@ public class HangfireService(
     private IStorageService StorageService { get; } = storageService;
 
     [AutomaticRetry(Attempts = 1, DelaysInSeconds = [30])]
-    public async Task BackupDatabase(int backupJobId)
+    public async Task BackupDatabase(int? backupJobId)
     {
+        if (backupJobId is null)
+            throw new ArgumentNullException(nameof(backupJobId), "BackupJobId cannot be null");
+        
         var backupJob = await DbContext.BackupJobs
             .FirstOrDefaultAsync(b => b.Id == backupJobId);
         
@@ -67,7 +70,7 @@ public class HangfireService(
                         if (File.Exists(backup.Path))
                             File.Delete(backup.Path);
                 
-                        backup.JobId = backupJob.Id;
+                        backup.JobId = backupJob.Id ?? 0;
                         backup.Job = backupJob;
                         backup.Path = newPath;
             
@@ -99,8 +102,11 @@ public class HangfireService(
     }
 
     [AutomaticRetry(Attempts = 3, DelaysInSeconds = new []{ 10, 30, 60 })]
-    public async Task CleanBackupRep(int backupJobId)
+    public async Task CleanBackupRep(int? backupJobId)
     {
+        if (backupJobId is null)
+            throw new ArgumentNullException(nameof(backupJobId), "BackupJobId cannot be null");
+        
         var backupJob = await DbContext.BackupJobs
             .Include(b => b.Backups)
             .FirstOrDefaultAsync(b => b.Id == backupJobId);
