@@ -34,7 +34,7 @@ public class SqliteContext(
                 .HasConversion(
                     v => v.Ticks,
                     v => new DateTime(v))
-                .ValueGeneratedOnAddOrUpdate();
+                .ValueGeneratedOnAdd();
             
             entity.Property(e => e.Retention)
                 .HasDefaultValueSql("7 days")
@@ -62,7 +62,7 @@ public class SqliteContext(
                 .HasConversion(
                     v => v.Ticks,
                     v => new DateTime(v))
-                .ValueGeneratedOnAddOrUpdate();
+                .ValueGeneratedOnAdd();
         });
         
         modelBuilder.Entity<Backup>(entity =>
@@ -79,11 +79,11 @@ public class SqliteContext(
                 .ValueGeneratedOnAdd();
 
             entity.Property(e => e.UpdatedAt)
-                .HasDefaultValueSql("datetime()")
+                .HasDefaultValue(DateTime.MinValue)
                 .HasConversion(
                     v => v.Ticks,
                     v => new DateTime(v))
-                .ValueGeneratedOnAddOrUpdate();
+                .ValueGeneratedOnAdd();
             
             entity.Property(e => e.BackupDate)
                 .HasConversion(
@@ -111,7 +111,7 @@ public class SqliteContext(
                 .HasConversion(
                     v => v.Ticks,
                     v => new DateTime(v))
-                .ValueGeneratedOnAddOrUpdate();
+                .ValueGeneratedOnAdd();
         });
     }
 }
