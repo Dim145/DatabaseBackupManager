@@ -20,7 +20,7 @@ public class SqliteContext(
             // add auto generate id on add with max id + 1
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("COALESCE((SELECT MAX(Id) FROM BackupJobs), 0) + 1");
+                .HasDefaultValueSql("COALESCE((SELECT MAX(id) FROM BackupJobs), 0) + 1");
             
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("datetime()")
@@ -48,7 +48,7 @@ public class SqliteContext(
         {
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("COALESCE((SELECT MAX(Id) FROM Servers), 0) + 1");
+                .HasDefaultValueSql("COALESCE((SELECT MAX(id) FROM Servers), 0) + 1");
             
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("datetime()")
@@ -69,7 +69,7 @@ public class SqliteContext(
         {
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("COALESCE((SELECT MAX(Id) FROM Backups), 0) + 1");
+                .HasDefaultValueSql("COALESCE((SELECT MAX(id) FROM Backups), 0) + 1");
             
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("datetime()")
@@ -97,7 +97,7 @@ public class SqliteContext(
         {
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("COALESCE((SELECT MAX(Id) FROM Agents), 0) + 1");
+                .HasDefaultValueSql("COALESCE((SELECT MAX(id) FROM Agents), 0) + 1");
             
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("datetime()")
