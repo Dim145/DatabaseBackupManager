@@ -229,6 +229,8 @@ await context.Database.MigrateAsync();
 await services.SeedDatabase();
 await HangfireService.InitHangfireRecurringJob(context, builder.Configuration);
 
+AppContext.SetSwitch("Microsoft.EntityFrameworkCore.Issue32911", true);
+
 try
 {
     app.Run();
