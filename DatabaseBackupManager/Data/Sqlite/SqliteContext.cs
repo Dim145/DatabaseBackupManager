@@ -1,4 +1,5 @@
-﻿using Core.Models;
+﻿using System.Globalization;
+using Core.Models;
 using DatabaseBackupManager.Services.StorageService;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,6 +30,13 @@ public class SqliteContext(
                     v => v.Ticks,
                     v => new DateTime(v))
                 .ValueGeneratedOnAddOrUpdate();
+            
+            entity.Property(e => e.Retention)
+                .HasDefaultValueSql("7 days")
+                .HasConversion(
+                    v => v.ToString(@"dd\.hh\:mm\:ss"),
+                    v => TimeSpan.ParseExact(v, @"dd\.hh\:mm\:ss", CultureInfo.InvariantCulture))
+                .ValueGeneratedOnAdd();
         });
         
         modelBuilder.Entity<Server>(entity =>
