@@ -17,6 +17,11 @@ public class SqliteContext(
 
         modelBuilder.Entity<BackupJob>(entity =>
         {
+            // add auto generate id on add with max id + 1
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasDefaultValueSql("COALESCE((SELECT MAX(Id) FROM BackupJobs), 0) + 1");
+            
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("datetime()")
                 .HasConversion(
@@ -41,6 +46,10 @@ public class SqliteContext(
         
         modelBuilder.Entity<Server>(entity =>
         {
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasDefaultValueSql("COALESCE((SELECT MAX(Id) FROM Server), 0) + 1");
+            
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("datetime()")
                 .HasConversion(
@@ -58,6 +67,10 @@ public class SqliteContext(
         
         modelBuilder.Entity<Backup>(entity =>
         {
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasDefaultValueSql("COALESCE((SELECT MAX(Id) FROM Backup), 0) + 1");
+            
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("datetime()")
                 .HasConversion(
@@ -78,6 +91,27 @@ public class SqliteContext(
                     v => new DateTime(v))
                 .HasDefaultValueSql("datetime()")
                 .ValueGeneratedOnAdd();
+        });
+        
+        modelBuilder.Entity<Agent>(entity =>
+        {
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasDefaultValueSql("COALESCE((SELECT MAX(Id) FROM Agent), 0) + 1");
+            
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("datetime()")
+                .HasConversion(
+                    v => v.Ticks,
+                    v => new DateTime(v))
+                .ValueGeneratedOnAdd();
+
+            entity.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("datetime()")
+                .HasConversion(
+                    v => v.Ticks,
+                    v => new DateTime(v))
+                .ValueGeneratedOnAddOrUpdate();
         });
     }
 }
