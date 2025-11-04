@@ -31,7 +31,7 @@ RUN export ACCEPT_EULA=Y && apt-get update && apt-get install -y \
     libgdiplus \
     openssl \
     postgresql-client \
-    postgresql-client-14 \
+    postgresql-client-15 \
     default-mysql-client \
     mssql-tools18 \
     sqlite3 \
